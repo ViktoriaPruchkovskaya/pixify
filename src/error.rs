@@ -21,7 +21,7 @@ pub enum UploadError {
 impl ResponseError for UploadError {
     fn error_response(&self) -> HttpResponse {
         match self {
-            UploadError::PayloadError(s) => HttpResponse::BadRequest().json(s.to_string()),
+            UploadError::PayloadError(_) => HttpResponse::BadRequest().json(self.to_string()),
             UploadError::FormError(s) => HttpResponse::BadRequest().json(s.to_string()),
             s => HttpResponse::InternalServerError().json(s.to_string()),
         }
