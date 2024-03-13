@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
     use actix_web::{test, App};
-    use crate::routes;
     use bytes::Bytes;
+    use crate::api::routes;
 
     #[actix_web::test]
     async fn test() {

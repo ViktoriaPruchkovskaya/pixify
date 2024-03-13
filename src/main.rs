@@ -1,5 +1,5 @@
 use actix_web::{App, HttpServer};
-use pixify::routes;
+use pixify::api::routes;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
