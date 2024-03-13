@@ -1010,6 +1010,7 @@ version = "0.1.0"
 dependencies = [
  "actix-multipart",
  "actix-web",
+ "bytes",
  "futures-util",
  "image",
  "thiserror",
