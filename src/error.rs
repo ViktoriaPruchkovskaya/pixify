@@ -16,6 +16,11 @@ pub enum UploadError {
         #[from]
         image::ImageError,
     ),
+    #[error(transparent)]
+    ImageFormatError(
+        #[from]
+        std::io::Error,
+    ),
 }
 
 impl ResponseError for UploadError {
