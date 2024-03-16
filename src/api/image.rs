@@ -14,11 +14,13 @@ pub async fn index() -> &'static str {
 #[post("/upload")]
 pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError> {
     let mut buffer: Vec<u8> = Vec::new();
+    let mut filename: String = String::new();
     while let Some(item) = payload.next().await {
         let mut field = item?;
         if field.name() != "file" {
             continue;
         }
+        filename = field.content_disposition().get_filename().unwrap_or("filename").to_string();
         while let Some(chunk) = field.next().await {
             let mut vec = chunk?.clone().to_vec();
             buffer.append(&mut vec);
@@ -34,6 +36,23 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
     let mut bytes: Vec<u8> = Vec::new();
     pxl.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
     Ok(HttpResponse::Ok().content_type("image/png")
-        .append_header(("Content-Disposition", "attachment; filename=filename.jpg"))
+        .append_header(("Content-Disposition", format!("attachment; filename={filename}")))
         .body(bytes))
 }
+
+// async fn get_file(mut payload: Multipart) -> (String, Vec<u8>) {
+//     let mut buffer: Vec<u8> = Vec::new();
+//     let mut filename: &str = "";
+//     while let Some(item) = payload.next().await {
+//         let mut field = item.unwrap();
+//         if field.name() != "file" {
+//             continue;
+//         }
+//         filename = field.content_disposition().get_filename().unwrap_or("filename").clone();
+//         while let Some(chunk) = field.next().await {
+//             let mut vec = chunk.unwrap().clone().to_vec();
+//             buffer.append(&mut vec);
+//         }
+//     }
+//     (filename.to_string(), buffer)
+// }
