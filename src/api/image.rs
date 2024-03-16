@@ -39,20 +39,3 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
         .append_header(("Content-Disposition", format!("attachment; filename={filename}")))
         .body(bytes))
 }
-
-// async fn get_file(mut payload: Multipart) -> (String, Vec<u8>) {
-//     let mut buffer: Vec<u8> = Vec::new();
-//     let mut filename: &str = "";
-//     while let Some(item) = payload.next().await {
-//         let mut field = item.unwrap();
-//         if field.name() != "file" {
-//             continue;
-//         }
-//         filename = field.content_disposition().get_filename().unwrap_or("filename").clone();
-//         while let Some(chunk) = field.next().await {
-//             let mut vec = chunk.unwrap().clone().to_vec();
-//             buffer.append(&mut vec);
-//         }
-//     }
-//     (filename.to_string(), buffer)
-// }
