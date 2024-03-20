@@ -2,9 +2,9 @@ use std::io::Cursor;
 use actix_multipart::Multipart;
 use actix_web::{get, HttpResponse, post};
 use futures_util::StreamExt as _;
-use image::{DynamicImage, io::Reader as ImageReader};
+use image::{DynamicImage, GenericImageView, ImageBuffer, io::Reader as ImageReader, Rgb, RgbImage};
+use crate::api::colors::RGBColor;
 use crate::error::UploadError;
-use crate::image::DynamicImagePxl;
 
 #[get("/")]
 pub async fn index() -> &'static str {
@@ -32,9 +32,19 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
     let img: DynamicImage = ImageReader::new(Cursor::new(buffer)).with_guessed_format()
         .map_err(UploadError::ImageFormatError)?
         .decode()?;
-    let pxl = img.pixelate();
+    let (width, height) = img.dimensions();
+    let mut small_img = img.resize(width / 5, height / 5, image::imageops::FilterType::CatmullRom);
+    let (width_sm, height_sm) = small_img.dimensions();
+    let mut out: RgbImage = ImageBuffer::new(width_sm, height_sm);
+    for (x, y, pixel) in out.enumerate_pixels_mut() {
+        let [red, green, blue, ..] = small_img.get_pixel(x, y).0;
+        let rgb = RGBColor { red, green, blue };
+        let (rgb, ..) = rgb.find_dmc();
+
+        *pixel = Rgb([rgb.red, rgb.green, rgb.blue]);
+    }
     let mut bytes: Vec<u8> = Vec::new();
-    pxl.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
+    out.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
     Ok(HttpResponse::Ok().content_type("image/png")
         .append_header(("Content-Disposition", format!("attachment; filename={filename}")))
         .body(bytes))
