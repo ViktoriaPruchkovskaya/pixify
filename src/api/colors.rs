@@ -23,11 +23,9 @@ impl RGBColor {
 }
 
 mod tests {
-    use super::RGBColor;
-
     #[test]
     fn it_gets_dmc_color() {
-        let color = RGBColor { red: 105, green: 104, blue: 90 };
+        let color = super::RGBColor { red: 105, green: 104, blue: 90 };
         let (rgb, ..) = color.find_dmc();
         assert_eq!(rgb.red, 108);
         assert_eq!(rgb.green, 108);
