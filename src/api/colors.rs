@@ -7,7 +7,7 @@ pub struct RGBColor {
 
 impl RGBColor {
     pub fn find_dmc(&self) -> (RGBColor, &str) {
-        let mut vec: Vec<(u64, (RGBColor, &str))> = vec![];
+        let mut color_diffs: Vec<(u64, (RGBColor, &str))> = vec![];
         for &(rgb, dmc) in RGB_TO_DMC.iter() {
             if rgb == *self {
                 return (rgb, dmc);
@@ -16,9 +16,22 @@ impl RGBColor {
             let green_diff: i32 = (rgb.green.wrapping_sub(self.green) as i32).pow(2);
             let blue_diff: i32 = (rgb.blue.wrapping_sub(self.blue) as i32).pow(2);
             let sum = ((red_diff + green_diff + blue_diff) as f64).sqrt() as u64;
-            vec.push((sum, (rgb, dmc)));
+            color_diffs.push((sum, (rgb, dmc)));
         }
-        vec.iter().min_by_key(|x| x.0).unwrap().1
+        color_diffs.iter().min_by_key(|x| x.0).unwrap().1
+    }
+}
+
+mod tests {
+    use super::RGBColor;
+
+    #[test]
+    fn it_gets_dmc_color() {
+        let color = RGBColor { red: 105, green: 104, blue: 90 };
+        let (rgb, ..) = color.find_dmc();
+        assert_eq!(rgb.red, 108);
+        assert_eq!(rgb.green, 108);
+        assert_eq!(rgb.blue, 108);
     }
 }
 
