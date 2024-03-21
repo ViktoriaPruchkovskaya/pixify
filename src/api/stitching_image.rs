@@ -1,19 +1,6 @@
 use image::{DynamicImage, GenericImageView, ImageBuffer, Rgb, RgbImage};
 use crate::api::colors::RGBColor;
 
-pub trait DynamicImagePxl {
-    fn pixelate(&self) -> DynamicImage;
-}
-
-impl DynamicImagePxl for DynamicImage {
-    fn pixelate(&self) -> DynamicImage {
-        let (width, height) = self.dimensions();
-        let small_img = self.resize(width / 10, height / 10, image::imageops::FilterType::CatmullRom);
-        small_img.resize(width, height, image::imageops::FilterType::Nearest)
-    }
-}
-
-
 pub trait DynamicImageStitching {
     fn to_dmc_in_rgb(&self) -> DynamicImage;
 }
