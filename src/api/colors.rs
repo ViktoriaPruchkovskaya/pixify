@@ -1,3 +1,6 @@
+use std::f32::consts::PI;
+use lab::Lab;
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct RGBColor {
     pub red: u8,
@@ -7,29 +10,137 @@ pub struct RGBColor {
 
 impl RGBColor {
     pub fn find_dmc(&self) -> (RGBColor, &str) {
-        let mut color_diffs: Vec<(u64, (RGBColor, &str))> = vec![];
+        let mut color_diffs: Vec<(i32, (RGBColor, &str))> = vec![];
+        let lab = Lab::from_rgb(&[self.red, self.green, self.blue]);
         for &(rgb, dmc) in RGB_TO_DMC.iter() {
             if rgb == *self {
                 return (rgb, dmc);
             }
-            let red_diff: i32 = (rgb.red.wrapping_sub(self.red) as i32).pow(2);
-            let green_diff: i32 = (rgb.green.wrapping_sub(self.green) as i32).pow(2);
-            let blue_diff: i32 = (rgb.blue.wrapping_sub(self.blue) as i32).pow(2);
-            let sum = ((red_diff + green_diff + blue_diff) as f64).sqrt() as u64;
-            color_diffs.push((sum, (rgb, dmc)));
+            let lab2 = Lab::from_rgb(&[rgb.red, rgb.green, rgb.blue]);
+            let diff = Self::calculate_diff(lab, lab2) as i32;
+            color_diffs.push((diff, (rgb, dmc)));
         }
         color_diffs.iter().min_by_key(|x| x.0).unwrap().1
+    }
+
+    fn calculate_diff(lab: Lab, lab2: Lab) -> f32 {
+        let c1 = (lab.a.powi(2) + lab.b.powi(2)).sqrt();
+        let c2 = (lab2.a.powi(2) + lab2.b.powi(2)).sqrt();
+        let c_bar = (c1 + c2) / 2.0;
+
+        let delta_l_prime = lab2.l - lab.l;
+        let l_bar = (lab.l + lab2.l) / 2.0;
+        let a_prime_1 = Self::get_a_prime(lab.a, c_bar);
+        let a_prime_2 = Self::get_a_prime(lab2.a, c_bar);
+        let c_prime_1 = (a_prime_1.powf(2.0) + lab.b.powf(2.0)).sqrt();
+        let c_prime_2 = (a_prime_2.powf(2.0) + lab2.b.powf(2.0)).sqrt();
+        let c_bar_prime = (c_prime_1 + c_prime_2) / 2.0;
+        let delta_c_prime = c_prime_2 - c_prime_1;
+        let s_sub_l = 1.0 + (0.015 * (l_bar - 50.0).powf(2.0)) / (20.0 + (l_bar - 50.0).powf(2.0)).sqrt();
+        let s_sub_c = 1.0 + 0.045 * c_bar_prime;
+
+        let h_prime_1 = Self::get_h_prime_fn(lab.b, a_prime_1);
+        let h_prime_2 = Self::get_h_prime_fn(lab2.b, a_prime_2);
+
+        let delta_h_prime = Self::get_delta_h_prime(c1, c2, h_prime_1, h_prime_2);
+
+        let delta_uppercase_h_prime = 2.0 * (c_prime_1 * c_prime_2).sqrt() *
+            (Self::degrees_to_radians(delta_h_prime) / 2.0).sin();
+
+        let uppercase_h_bar_prime = Self::get_uppercase_h_bar_prime(h_prime_1, h_prime_2);
+
+        let uppercase_t = Self::get_uppercase_t(uppercase_h_bar_prime);
+
+        let s_sub_uppercase_h = 1.0 + 0.015 * c_bar_prime * uppercase_t;
+
+        let r_sub_t = Self::get_r_sub_t(c_bar_prime, uppercase_h_bar_prime);
+
+        let lightness: f32 = delta_l_prime / (1.0 * s_sub_l);
+
+        let chroma: f32 = delta_c_prime / (1.0 * s_sub_c);
+
+        let hue: f32 = delta_uppercase_h_prime / (1.0 * s_sub_uppercase_h);
+
+        (lightness.powi(2) + chroma.powi(2) + hue.powi(2) + r_sub_t * chroma * hue).sqrt()
+    }
+
+    fn get_h_prime_fn(x: f32, y: f32) -> f32 {
+        if x == 0.0 && y == 0.0 {
+            return 0.0;
+        }
+
+        let mut hue_angle = Self::radians_to_degrees(x.atan2(y));
+        if hue_angle < 0.0 {
+            hue_angle += 360.0;
+        }
+        hue_angle
+    }
+
+    fn get_a_prime(a: f32, c_bar: f32) -> f32 {
+        a + a / 2.0 * (1.0 - (c_bar.powi(7) / (c_bar.powi(7) + 25_f32.powi(7))).sqrt())
+    }
+
+    fn get_delta_h_prime(c1: f32, c2: f32, h_prime_1: f32, h_prime_2: f32) -> f32 {
+        if 0.0 == c1 || 0.0 == c2 {
+            return 0.0;
+        }
+
+        if (h_prime_1 - h_prime_2).abs() <= 180.0 {
+            return h_prime_2 - h_prime_1;
+        }
+
+        if h_prime_2 <= h_prime_1 {
+            return h_prime_2 - h_prime_1 + 360.0;
+        }
+        h_prime_2 - h_prime_1 - 360.0
+    }
+
+    fn get_uppercase_h_bar_prime(h_prime_1: f32, h_prime_2: f32) -> f32 {
+        if (h_prime_1 - h_prime_2).abs() > 180.0 {
+            return (h_prime_1 + h_prime_2 + 360.0) / 2.0;
+        }
+
+        (h_prime_1 + h_prime_2) / 2.0
+    }
+
+    fn get_uppercase_t(uppercase_h_bar_prime: f32) -> f32 {
+        1.0 - 0.17 * Self::degrees_to_radians(uppercase_h_bar_prime - 30.0).cos() +
+            0.24 * Self::degrees_to_radians(2.0 * uppercase_h_bar_prime).cos() +
+            0.32 * Self::degrees_to_radians(3.0 * uppercase_h_bar_prime + 6.0).cos() -
+            0.20 * Self::degrees_to_radians(4.0 * uppercase_h_bar_prime - 63.0).cos()
+    }
+
+    fn get_r_sub_t(c_bar_prime: f32, uppercase_h_bar_prime: f32) -> f32 {
+        -2.0 * (c_bar_prime.powi(7) / (c_bar_prime.powi(7) + 25f32.powi(7))).sqrt() *
+            Self::degrees_to_radians(60.0 * (-((uppercase_h_bar_prime - 275.0) / 25.0).powi(2)).exp()).sin()
+    }
+
+    fn radians_to_degrees(radians: f32) -> f32 {
+        radians * (180.0 / PI)
+    }
+
+    fn degrees_to_radians(degrees: f32) -> f32 {
+        degrees * (PI / 180.0)
     }
 }
 
 mod tests {
     #[test]
     fn it_gets_dmc_color() {
-        let color = super::RGBColor { red: 105, green: 104, blue: 90 };
+        let color = super::RGBColor { red: 255, green: 29, blue: 30 };
         let (rgb, ..) = color.find_dmc();
-        assert_eq!(rgb.red, 108);
-        assert_eq!(rgb.green, 108);
-        assert_eq!(rgb.blue, 108);
+        assert_eq!(rgb.red, 204);
+        assert_eq!(rgb.green, 63);
+        assert_eq!(rgb.blue, 24);
+    }
+
+    #[test]
+    fn it_gets_existing_color() {
+        let color = super::RGBColor { red: 255, green: 255, blue: 255 };
+        let (rgb, ..) = color.find_dmc();
+        assert_eq!(rgb.red, 255);
+        assert_eq!(rgb.green, 255);
+        assert_eq!(rgb.blue, 255);
     }
 }
 
