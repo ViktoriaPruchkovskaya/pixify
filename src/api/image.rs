@@ -2,8 +2,8 @@ use std::io::Cursor;
 use actix_multipart::Multipart;
 use actix_web::{get, HttpResponse, post};
 use futures_util::StreamExt as _;
-use image::{DynamicImage, GenericImageView, io::Reader as ImageReader};
-use crate::api::stitching_image::DynamicImageStitching;
+use image::{DynamicImage, io::Reader as ImageReader};
+use crate::api::embroidery_canvas::EmbroideryCanvas;
 use crate::error::UploadError;
 
 #[get("/")]
@@ -27,18 +27,13 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
             buffer.append(&mut vec);
         }
     }
-
     if buffer.is_empty() { return Err(UploadError::PayloadError("file".into())); }
 
-    let img: DynamicImage = ImageReader::new(Cursor::new(buffer)).with_guessed_format()
-        .map_err(UploadError::ImageFormatError)?
-        .decode()?;
-    let (width, height) = img.dimensions();
-    //TODO: define width/height based on original size
-    let img: DynamicImage = img.resize(width / 5, height / 5, image::imageops::FilterType::CatmullRom);
-    let out = img.to_dmc_in_rgb();
+    let img: DynamicImage = ImageReader::new(Cursor::new(buffer)).with_guessed_format().map_err(UploadError::ImageFormatError)?.decode()?;
+    let pxl_img = EmbroideryCanvas::new(img).picture;
+
     let mut bytes: Vec<u8> = Vec::new();
-    out.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
+    pxl_img.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
     Ok(HttpResponse::Ok().content_type("image/png")
         .append_header(("Content-Disposition", format!("attachment; filename={filename}")))
         .body(bytes))
