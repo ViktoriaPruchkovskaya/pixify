@@ -1,7 +1,7 @@
 use std::f32::consts::PI;
 use lab::Lab;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Hash, Eq)]
 pub struct RGBColor {
     pub red: u8,
     pub green: u8,
@@ -19,10 +19,12 @@ impl RGBColor {
             let diff = Self::calculate_diff(lab, lab_2) as i32;
             color_diffs.push((diff, (rgb, dmc)));
         }
+
         color_diffs.iter().min_by_key(|x| x.0).unwrap().1
     }
 
-    fn calculate_diff(lab: Lab, lab_2: Lab) -> f32 {
+    //todo: think about calculating lab inside
+    pub fn calculate_diff(lab: Lab, lab_2: Lab) -> f32 {
         let c1 = (lab.a.powi(2) + lab.b.powi(2)).sqrt();
         let c2 = (lab_2.a.powi(2) + lab_2.b.powi(2)).sqrt();
         let c_bar = (c1 + c2) / 2.0;
