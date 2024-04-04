@@ -1,13 +1,13 @@
 use std::collections::{HashMap, HashSet};
 use image::{ColorType, DynamicImage, GenericImage, GenericImageView, Pixel, Rgb};
 use lab::Lab;
-use crate::api::colors::RGBColor;
+use crate::api::colors::RgbColor;
 
 #[derive(Debug)]
 struct Stitch {
     pub x: u32,
     pub y: u32,
-    color: RGBColor,
+    color: RgbColor,
 }
 
 pub struct EmbroideryCanvas {
@@ -21,7 +21,7 @@ impl EmbroideryCanvas {
         let cell_height = width as f32 / n_cells_in_width as f32;
         let rows = (height as f32 / cell_height).round() as u32;
         // let size = n_cells_in_width * rows;
-        let mut color_palette: HashSet<RGBColor> = HashSet::new();
+        let mut color_palette: HashSet<RgbColor> = HashSet::new();
         let mut stitches: Vec<Stitch> = vec![];
         let mut pxl_img = DynamicImage::new(width, height, ColorType::Rgb8);
         for y in 0..rows {
@@ -48,8 +48,8 @@ impl EmbroideryCanvas {
                     }
                 });
                 let (major_color, ..) = sorted_entries[0];
-                let rgb: RGBColor = major_color.into();
-                let (rgb, ..): (RGBColor, &str) = rgb.find_dmc();
+                let rgb: RgbColor = major_color.into();
+                let (rgb, ..): (RgbColor, &str) = rgb.find_dmc();
                 for y in y_start..y_end {
                     for x in x_start..x_end {
                         pxl_img.put_pixel(x, y, Rgb([rgb.red, rgb.green, rgb.blue]).to_rgba());
@@ -75,23 +75,23 @@ impl EmbroideryCanvas {
         EmbroideryCanvas { picture: pxl_img }
     }
 
-    fn get_palette(mut colors: HashSet<RGBColor>, colors_num: u8) -> HashMap<RGBColor, RGBColor> {
-        let mut palette: Vec<RGBColor> = colors.clone().into_iter().collect();
-        let mut diffs: Vec<(RGBColor, RGBColor, f32)> = vec![];
+    fn get_palette(mut colors: HashSet<RgbColor>, colors_num: u8) -> HashMap<RgbColor, RgbColor> {
+        let mut palette: Vec<RgbColor> = colors.clone().into_iter().collect();
+        let mut diffs: Vec<(RgbColor, RgbColor, f32)> = vec![];
         for i in 0..palette.len() - 1 {
             let color = palette[i];
             let lab1 = Lab::from_rgb(&color.into());
             for j in i + 1..palette.len() {
                 let other_color = palette[j];
                 let lab2 = Lab::from_rgb(&other_color.into());
-                let diff = RGBColor::calculate_diff(lab1, lab2);
+                let diff = RgbColor::calculate_diff(lab1, lab2);
                 if diff != 0.0 && diff < 10.0 {
                     diffs.push((color, other_color, diff));
                 }
             }
         }
         diffs.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap());
-        let mut changed: HashMap<RGBColor, RGBColor> = HashMap::new();
+        let mut changed: HashMap<RgbColor, RgbColor> = HashMap::new();
         while colors.len() > colors_num as usize {
             if let Some(diff) = diffs.pop() {
                 changed.insert(diff.0, diff.1);
