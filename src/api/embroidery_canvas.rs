@@ -40,17 +40,16 @@ impl EmbroideryCanvas {
                 let mut sorted_entries: Vec<(Rgb<u8>, u32)> = colors_count.into_iter().collect();
                 sorted_entries.sort_by(|&(key1, value1), &(key2, value2)| {
                     if value1 == value2 {
-                        let lab1 = Lab::from_rgb(&[key1[0], key1[1], key1[2]]);
-                        let lab2 = Lab::from_rgb(&[key2[0], key2[1], key2[2]]);
+                        let lab1 = Lab::from_rgb(&key1.0);
+                        let lab2 = Lab::from_rgb(&key2.0);
                         lab1.b.partial_cmp(&lab2.b).unwrap_or(std::cmp::Ordering::Equal)
                     } else {
                         value2.cmp(&value1)
                     }
                 });
                 let (major_color, ..) = sorted_entries[0];
-                // let (major_color, ..) = colors_count.iter().max_by_key(|&(_, count)| count).unwrap();
-                let rgb = RGBColor { red: major_color[0], green: major_color[1], blue: major_color[2] };
-                let (rgb, ..) = rgb.find_dmc();
+                let rgb: RGBColor = major_color.into();
+                let (rgb, ..): (RGBColor, &str) = rgb.find_dmc();
                 for y in y_start..y_end {
                     for x in x_start..x_end {
                         pxl_img.put_pixel(x, y, Rgb([rgb.red, rgb.green, rgb.blue]).to_rgba());
@@ -65,11 +64,9 @@ impl EmbroideryCanvas {
         for stitch in stitches {
             for y in stitch.y..((stitch.y as f32 + cell_height).ceil() as u32).min(height) {
                 for x in stitch.x..((stitch.x as f32 + cell_height).ceil() as u32).min(width) {
-                    let changed_color = changed_colors.get(&stitch.color);
-                    let mut color = Rgb([stitch.color.red, stitch.color.green, stitch.color.blue]);
-                    if changed_color.is_some() {
-                        let changed_color = changed_color.unwrap();
-                        color = Rgb([changed_color.red, changed_color.green, changed_color.blue]);
+                    let mut color: Rgb<u8> = stitch.color.into();
+                    if let Some(changed_color) = changed_colors.get(&stitch.color) {
+                        color = (*changed_color).into();
                     }
                     pxl_img.put_pixel(x, y, color.to_rgba());
                 }
@@ -83,10 +80,10 @@ impl EmbroideryCanvas {
         let mut diffs: Vec<(RGBColor, RGBColor, f32)> = vec![];
         for i in 0..palette.len() - 1 {
             let color = palette[i];
-            let lab1 = Lab::from_rgb(&[color.red, color.green, color.blue]);
+            let lab1 = Lab::from_rgb(&color.into());
             for j in i + 1..palette.len() {
                 let other_color = palette[j];
-                let lab2 = Lab::from_rgb(&[other_color.red, other_color.green, other_color.blue]);
+                let lab2 = Lab::from_rgb(&other_color.into());
                 let diff = RGBColor::calculate_diff(lab1, lab2);
                 if diff != 0.0 && diff < 10.0 {
                     diffs.push((color, other_color, diff));
@@ -96,8 +93,7 @@ impl EmbroideryCanvas {
         diffs.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap());
         let mut changed: HashMap<RGBColor, RGBColor> = HashMap::new();
         while colors.len() > colors_num as usize {
-            let diff = diffs.pop();
-            if let Some(diff) = &diff {
+            if let Some(diff) = diffs.pop() {
                 changed.insert(diff.0, diff.1);
                 colors.remove(&diff.0);
             } else {

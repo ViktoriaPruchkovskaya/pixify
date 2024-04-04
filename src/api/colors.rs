@@ -1,4 +1,5 @@
 use std::f32::consts::PI;
+use image::Rgb;
 use lab::Lab;
 
 #[derive(Debug, Copy, Clone, PartialEq, Hash, Eq)]
@@ -6,6 +7,24 @@ pub struct RGBColor {
     pub red: u8,
     pub green: u8,
     pub blue: u8,
+}
+
+impl Into<Rgb<u8>> for RGBColor {
+    fn into(self) -> Rgb<u8> {
+        Rgb([self.red, self.green, self.blue])
+    }
+}
+
+impl Into<[u8; 3]> for RGBColor {
+    fn into(self) -> [u8; 3] {
+        [self.red, self.green, self.blue]
+    }
+}
+
+impl Into<RGBColor> for Rgb<u8> {
+    fn into(self) -> RGBColor {
+        RGBColor { red: self[0], green: self[1], blue: self[2] }
+    }
 }
 
 impl RGBColor {
