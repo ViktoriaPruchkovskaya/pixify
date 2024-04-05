@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use image::{ColorType, DynamicImage, GenericImage, GenericImageView, Pixel, Rgb};
 use lab::Lab;
-use crate::api::colors::RgbColor;
+use crate::api::colors::{DmcColor, RgbColor};
 
 #[derive(Debug)]
 struct Stitch {
@@ -23,38 +23,14 @@ impl EmbroideryCanvas {
         // let size = n_cells_in_width * rows;
         let mut color_palette: HashSet<RgbColor> = HashSet::new();
         let mut stitches: Vec<Stitch> = vec![];
-        let mut pxl_img = DynamicImage::new(width, height, ColorType::Rgb8);
         for y in 0..rows {
             let y_start = (y as f32 * cell_height).round() as u32;
             let y_end = ((y_start as f32 + cell_height).round() as u32).min(height);
             for x in 0..n_cells_in_width {
                 let x_start = (x as f32 * cell_height).round() as u32;
                 let x_end = ((x_start as f32 + cell_height).round() as u32).min(width);
-                let mut colors_count: HashMap<Rgb<u8>, u32> = HashMap::new();
-                for y in y_start..y_end {
-                    for x in x_start..x_end {
-                        let color = img.get_pixel(x, y).to_rgb();
-                        colors_count.entry(color.clone()).and_modify(|count| *count += 1).or_insert(1);
-                    }
-                }
-                let mut sorted_entries: Vec<(Rgb<u8>, u32)> = colors_count.into_iter().collect();
-                sorted_entries.sort_by(|&(key1, value1), &(key2, value2)| {
-                    if value1 == value2 {
-                        let lab1 = Lab::from_rgb(&key1.0);
-                        let lab2 = Lab::from_rgb(&key2.0);
-                        lab1.b.partial_cmp(&lab2.b).unwrap_or(std::cmp::Ordering::Equal)
-                    } else {
-                        value2.cmp(&value1)
-                    }
-                });
-                let (major_color, ..) = sorted_entries[0];
-                let rgb: RgbColor = major_color.into();
-                let (rgb, ..): (RgbColor, &str) = rgb.find_dmc();
-                for y in y_start..y_end {
-                    for x in x_start..x_end {
-                        pxl_img.put_pixel(x, y, Rgb([rgb.red, rgb.green, rgb.blue]).to_rgba());
-                    }
-                }
+                let major_color = Self::get_major_color_in_cell(&img, x_start, x_end, y_start, y_end);
+                let DmcColor { rgb, .. } = major_color.find_dmc();
                 stitches.push(Stitch { x: x_start, y: y_start, color: rgb });
                 color_palette.insert(rgb);
             }
@@ -76,7 +52,7 @@ impl EmbroideryCanvas {
     }
 
     fn get_palette(mut colors: HashSet<RgbColor>, colors_num: u8) -> HashMap<RgbColor, RgbColor> {
-        let mut palette: Vec<RgbColor> = colors.clone().into_iter().collect();
+        let palette: Vec<RgbColor> = colors.clone().into_iter().collect();
         let mut diffs: Vec<(RgbColor, RgbColor, f32)> = vec![];
         for i in 0..palette.len() - 1 {
             let color = palette[i];
@@ -101,5 +77,25 @@ impl EmbroideryCanvas {
             }
         }
         changed
+    }
+
+    fn get_major_color_in_cell(image: &DynamicImage, x_start: u32, x_end: u32, y_start: u32, y_end: u32) -> RgbColor {
+        let mut colors_count: HashMap<Rgb<u8>, u32> = HashMap::new();
+        for y in y_start..y_end {
+            for x in x_start..x_end {
+                let color = image.get_pixel(x, y).to_rgb();
+                colors_count.entry(color.clone()).and_modify(|count| *count += 1).or_insert(1);
+            }
+        }
+        let mut sorted_entries: Vec<(Rgb<u8>, u32)> = colors_count.into_iter().collect();
+        sorted_entries.sort_by(|&(color, count), &(color_2, count_2)| {
+            if count != count_2 {
+                return count_2.cmp(&count);
+            }
+            let lab_1 = Lab::from_rgb(&color.0);
+            let lab_2 = Lab::from_rgb(&color_2.0);
+            lab_1.b.partial_cmp(&lab_2.b).unwrap_or(std::cmp::Ordering::Equal)
+        });
+        sorted_entries[0].0.into()
     }
 }

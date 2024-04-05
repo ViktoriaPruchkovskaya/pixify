@@ -27,22 +27,30 @@ impl Into<RgbColor> for Rgb<u8> {
     }
 }
 
+pub struct DmcColor {
+    pub name: &'static str,
+    pub rgb: RgbColor,
+}
+
 impl RgbColor {
-    pub fn find_dmc(&self) -> (RgbColor, &str) {
-        let mut color_diffs: Vec<(i32, (RgbColor, &str))> = vec![];
-        let lab = Lab::from_rgb(&[self.red, self.green, self.blue]);
-        for &(rgb, lab_2, dmc) in RGB_TO_DMC.iter() {
+    pub fn find_dmc(&self) -> DmcColor {
+        let mut color_diffs: Vec<(i32, (&str, RgbColor))> = vec![];
+        let lab = Lab::from_rgb(&(*self).into());
+        for &(rgb, lab_2, name) in RGB_TO_DMC.iter() {
             if rgb == *self {
-                return (rgb, dmc);
+                return DmcColor { name, rgb };
             }
             let diff = Self::calculate_diff(lab, lab_2) as i32;
-            color_diffs.push((diff, (rgb, dmc)));
+            color_diffs.push((diff, (name, rgb)));
         }
 
-        color_diffs.iter().min_by_key(|x| x.0).unwrap().1
+        let (.., dmc) = color_diffs.iter().min_by_key(|x| x.0).unwrap();
+        DmcColor {
+            name: dmc.0,
+            rgb: dmc.1,
+        }
     }
 
-    //todo: think about calculating lab inside
     pub fn calculate_diff(lab: Lab, lab_2: Lab) -> f32 {
         let c1 = (lab.a.powi(2) + lab.b.powi(2)).sqrt();
         let c2 = (lab_2.a.powi(2) + lab_2.b.powi(2)).sqrt();
@@ -148,7 +156,7 @@ mod tests {
     #[test]
     fn it_gets_dmc_color() {
         let color = super::RgbColor { red: 255, green: 29, blue: 30 };
-        let (rgb, ..) = color.find_dmc();
+        let super::DmcColor { rgb, .. } = color.find_dmc();
         assert_eq!(rgb.red, 204);
         assert_eq!(rgb.green, 63);
         assert_eq!(rgb.blue, 24);
@@ -157,7 +165,7 @@ mod tests {
     #[test]
     fn it_gets_existing_color() {
         let color = super::RgbColor { red: 255, green: 255, blue: 255 };
-        let (rgb, ..) = color.find_dmc();
+        let super::DmcColor { rgb, .. } = color.find_dmc();
         assert_eq!(rgb.red, 255);
         assert_eq!(rgb.green, 255);
         assert_eq!(rgb.blue, 255);
