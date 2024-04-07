@@ -34,21 +34,20 @@ pub struct DmcColor {
 
 impl RgbColor {
     pub fn find_dmc(&self) -> DmcColor {
-        let mut color_diffs: Vec<(i32, (&str, RgbColor))> = vec![];
+        let mut color_diffs: Vec<(i32, DmcColor)> = vec![];
         let lab = Lab::from_rgb(&(*self).into());
         for &(rgb, lab_2, name) in RGB_TO_DMC.iter() {
+            let dmc_color = DmcColor { name, rgb };
             if rgb == *self {
-                return DmcColor { name, rgb };
+                return dmc_color;
             }
             let diff = Self::calculate_diff(lab, lab_2) as i32;
-            color_diffs.push((diff, (name, rgb)));
+
+            color_diffs.push((diff, dmc_color));
         }
 
-        let (.., dmc) = color_diffs.iter().min_by_key(|x| x.0).unwrap();
-        DmcColor {
-            name: dmc.0,
-            rgb: dmc.1,
-        }
+        let (.., closest_dmc_color) = color_diffs.iter().min_by_key(|x| x.0).unwrap();
+        DmcColor { name: closest_dmc_color.name, rgb: closest_dmc_color.rgb }
     }
 
     pub fn calculate_diff(lab: Lab, lab_2: Lab) -> f32 {

@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use image::{ColorType, DynamicImage, GenericImage, GenericImageView, Pixel, Rgb};
 use lab::Lab;
@@ -94,7 +95,7 @@ impl EmbroideryCanvas {
             }
             let lab_1 = Lab::from_rgb(&color.0);
             let lab_2 = Lab::from_rgb(&color_2.0);
-            lab_1.b.partial_cmp(&lab_2.b).unwrap_or(std::cmp::Ordering::Equal)
+            lab_1.b.partial_cmp(&lab_2.b).unwrap_or(Ordering::Equal)
         });
         sorted_entries[0].0.into()
     }
