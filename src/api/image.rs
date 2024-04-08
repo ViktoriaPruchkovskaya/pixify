@@ -1,10 +1,10 @@
-use std::io::Cursor;
-use actix_multipart::Multipart;
-use actix_web::{get, HttpResponse, post};
-use futures_util::StreamExt as _;
-use image::{DynamicImage, io::Reader as ImageReader};
-use crate::api::embroidery_canvas::EmbroideryCanvas;
+use crate::embroidery::canvas::Canvas;
 use crate::error::UploadError;
+use actix_multipart::Multipart;
+use actix_web::{get, post, HttpResponse};
+use futures_util::StreamExt as _;
+use image::{io::Reader as ImageReader, DynamicImage};
+use std::io::Cursor;
 
 #[get("/")]
 pub async fn index() -> &'static str {
@@ -21,20 +21,33 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
         if field.name() != "file" {
             continue;
         }
-        filename = field.content_disposition().get_filename().unwrap_or("filename").to_string();
+        filename = field
+            .content_disposition()
+            .get_filename()
+            .unwrap_or("filename")
+            .to_string();
         while let Some(chunk) = field.next().await {
             let mut vec = chunk?.clone().to_vec();
             buffer.append(&mut vec);
         }
     }
-    if buffer.is_empty() { return Err(UploadError::PayloadError("file".into())); }
+    if buffer.is_empty() {
+        return Err(UploadError::PayloadError("file".into()));
+    }
 
-    let img: DynamicImage = ImageReader::new(Cursor::new(buffer)).with_guessed_format().map_err(UploadError::ImageFormatError)?.decode()?;
-    let pxl_img = EmbroideryCanvas::new(img).picture;
+    let img: DynamicImage = ImageReader::new(Cursor::new(buffer))
+        .with_guessed_format()
+        .map_err(UploadError::ImageFormatError)?
+        .decode()?;
+    let pxl_img = Canvas::new(img).picture;
 
     let mut bytes: Vec<u8> = Vec::new();
     pxl_img.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
-    Ok(HttpResponse::Ok().content_type("image/png")
-        .append_header(("Content-Disposition", format!("attachment; filename={filename}")))
+    Ok(HttpResponse::Ok()
+        .content_type("image/png")
+        .append_header((
+            "Content-Disposition",
+            format!("attachment; filename={filename}"),
+        ))
         .body(bytes))
 }
