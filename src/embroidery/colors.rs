@@ -9,25 +9,25 @@ pub struct RgbColor {
     pub blue: u8,
 }
 
-impl Into<Rgb<u8>> for RgbColor {
-    fn into(self) -> Rgb<u8> {
-        Rgb([self.red, self.green, self.blue])
-    }
-}
-
-impl Into<[u8; 3]> for RgbColor {
-    fn into(self) -> [u8; 3] {
-        [self.red, self.green, self.blue]
-    }
-}
-
-impl Into<RgbColor> for Rgb<u8> {
-    fn into(self) -> RgbColor {
+impl From<Rgb<u8>> for RgbColor {
+    fn from(value: Rgb<u8>) -> Self {
         RgbColor {
-            red: self[0],
-            green: self[1],
-            blue: self[2],
+            red: value[0],
+            green: value[1],
+            blue: value[2],
         }
+    }
+}
+
+impl From<RgbColor> for Rgb<u8> {
+    fn from(value: RgbColor) -> Self {
+        Rgb([value.red, value.green, value.blue])
+    }
+}
+
+impl From<RgbColor> for [u8; 3] {
+    fn from(val: RgbColor) -> Self {
+        [val.red, val.green, val.blue]
     }
 }
 
@@ -38,7 +38,7 @@ pub struct DmcColor {
 
 impl RgbColor {
     pub fn find_dmc(&self) -> DmcColor {
-        let mut color_diffs: Vec<(i32, DmcColor)> = vec![];
+        let mut color_diffs: Vec<(i32, DmcColor)> = Vec::with_capacity(RGB_TO_DMC.len());
         let lab = Lab::from_rgb(&(*self).into());
         for &(rgb, lab_2, name) in RGB_TO_DMC.iter() {
             let dmc_color = DmcColor { name, rgb };

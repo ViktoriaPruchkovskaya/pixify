@@ -97,7 +97,7 @@ impl Canvas {
             for x in x_start..x_end {
                 let color = image.get_pixel(x, y).to_rgb();
                 colors_count
-                    .entry(color.clone())
+                    .entry(color)
                     .and_modify(|count| *count += 1)
                     .or_insert(1);
             }
