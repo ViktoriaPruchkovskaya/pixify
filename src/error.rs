@@ -12,15 +12,9 @@ pub enum UploadError {
         MultipartError,
     ),
     #[error(transparent)]
-    ImageError(
-        #[from]
-        image::ImageError,
-    ),
+    ImageError(#[from] image::ImageError),
     #[error(transparent)]
-    ImageFormatError(
-        #[from]
-        std::io::Error,
-    ),
+    ImageFormatError(#[from] std::io::Error),
 }
 
 impl ResponseError for UploadError {

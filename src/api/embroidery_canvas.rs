@@ -1,8 +1,8 @@
-use std::cmp::Ordering;
-use std::collections::{HashMap, HashSet};
+use crate::api::colors::{DmcColor, RgbColor};
 use image::{ColorType, DynamicImage, GenericImage, GenericImageView, Pixel, Rgb};
 use lab::Lab;
-use crate::api::colors::{DmcColor, RgbColor};
+use std::cmp::Ordering;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug)]
 struct Stitch {
@@ -30,9 +30,14 @@ impl EmbroideryCanvas {
             for x in 0..n_cells_in_width {
                 let x_start = (x as f32 * cell_height).round() as u32;
                 let x_end = ((x_start as f32 + cell_height).round() as u32).min(width);
-                let major_color = Self::get_major_color_in_cell(&img, x_start, x_end, y_start, y_end);
+                let major_color =
+                    Self::get_major_color_in_cell(&img, x_start, x_end, y_start, y_end);
                 let DmcColor { rgb, .. } = major_color.find_dmc();
-                stitches.push(Stitch { x: x_start, y: y_start, color: rgb });
+                stitches.push(Stitch {
+                    x: x_start,
+                    y: y_start,
+                    color: rgb,
+                });
                 color_palette.insert(rgb);
             }
         }
@@ -80,12 +85,21 @@ impl EmbroideryCanvas {
         changed
     }
 
-    fn get_major_color_in_cell(image: &DynamicImage, x_start: u32, x_end: u32, y_start: u32, y_end: u32) -> RgbColor {
+    fn get_major_color_in_cell(
+        image: &DynamicImage,
+        x_start: u32,
+        x_end: u32,
+        y_start: u32,
+        y_end: u32,
+    ) -> RgbColor {
         let mut colors_count: HashMap<Rgb<u8>, u32> = HashMap::new();
         for y in y_start..y_end {
             for x in x_start..x_end {
                 let color = image.get_pixel(x, y).to_rgb();
-                colors_count.entry(color.clone()).and_modify(|count| *count += 1).or_insert(1);
+                colors_count
+                    .entry(color.clone())
+                    .and_modify(|count| *count += 1)
+                    .or_insert(1);
             }
         }
         let mut sorted_entries: Vec<(Rgb<u8>, u32)> = colors_count.into_iter().collect();
