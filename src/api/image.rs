@@ -1,4 +1,4 @@
-use crate::api::embroidery_canvas::EmbroideryCanvas;
+use crate::embroidery::canvas::Canvas;
 use crate::error::UploadError;
 use actix_multipart::Multipart;
 use actix_web::{get, post, HttpResponse};
@@ -39,7 +39,7 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
         .with_guessed_format()
         .map_err(UploadError::ImageFormatError)?
         .decode()?;
-    let pxl_img = EmbroideryCanvas::new(img).picture;
+    let pxl_img = Canvas::new(img).picture;
 
     let mut bytes: Vec<u8> = Vec::new();
     pxl_img.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;

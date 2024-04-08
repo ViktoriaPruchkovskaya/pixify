@@ -1,4 +1,4 @@
-use crate::api::colors::{DmcColor, RgbColor};
+use crate::embroidery::colors::{DmcColor, RgbColor};
 use image::{ColorType, DynamicImage, GenericImage, GenericImageView, Pixel, Rgb};
 use lab::Lab;
 use std::cmp::Ordering;
@@ -11,12 +11,12 @@ struct Stitch {
     color: RgbColor,
 }
 
-pub struct EmbroideryCanvas {
+pub struct Canvas {
     pub picture: DynamicImage,
 }
 
-impl EmbroideryCanvas {
-    pub fn new(img: DynamicImage) -> EmbroideryCanvas {
+impl Canvas {
+    pub fn new(img: DynamicImage) -> Canvas {
         let (width, height) = img.dimensions();
         let n_cells_in_width = 30;
         let cell_height = width as f32 / n_cells_in_width as f32;
@@ -54,7 +54,7 @@ impl EmbroideryCanvas {
                 }
             }
         }
-        EmbroideryCanvas { picture: pxl_img }
+        Canvas { picture: pxl_img }
     }
 
     fn get_palette(mut colors: HashSet<RgbColor>, colors_num: u8) -> HashMap<RgbColor, RgbColor> {
