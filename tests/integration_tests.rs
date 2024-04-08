@@ -1,3 +1,4 @@
+#[cfg(test)]
 mod tests {
     use actix_web::{http, test, App};
     use bytes::Bytes;

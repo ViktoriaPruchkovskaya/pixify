@@ -163,6 +163,7 @@ impl RgbColor {
     }
 }
 
+#[cfg(test)]
 mod tests {
     #[test]
     fn it_gets_dmc_color() {
