@@ -63,9 +63,9 @@ impl Canvas {
     ) -> (HashSet<RgbColor>, HashMap<RgbColor, RgbColor>) {
         let mut palette: Vec<RgbColor> = colors.clone().into_iter().collect();
         palette.sort_by(|color_1, color_2| {
-            let lab1 = Lab::from_rgb(&(*color_1).into());
-            let lab2 = Lab::from_rgb(&(*color_2).into());
-            lab1.b.partial_cmp(&lab2.b).unwrap_or(Ordering::Equal)
+            let lab_1 = Lab::from_rgb(&(*color_1).into());
+            let lab_2 = Lab::from_rgb(&(*color_2).into());
+            lab_2.b.partial_cmp(&lab_1.b).unwrap_or(Ordering::Equal)
         });
 
         let mut changed_colors: HashMap<RgbColor, RgbColor> = HashMap::new();
