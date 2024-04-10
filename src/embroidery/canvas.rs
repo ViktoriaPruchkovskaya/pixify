@@ -21,15 +21,14 @@ impl Canvas {
         let n_cells_in_width = 30;
         let cell_height = width as f32 / n_cells_in_width as f32;
         let rows = (height as f32 / cell_height).round() as u32;
-        // let size = n_cells_in_width * rows;
         let mut color_palette: HashSet<RgbColor> = HashSet::new();
         let mut stitches: Vec<Stitch> = vec![];
         for y in 0..rows {
             let y_start = (y as f32 * cell_height).round() as u32;
-            let y_end = ((y_start as f32 + cell_height).round() as u32).min(height);
+            let y_end = (y_start + cell_height as u32).min(height);
             for x in 0..n_cells_in_width {
                 let x_start = (x as f32 * cell_height).round() as u32;
-                let x_end = ((x_start as f32 + cell_height).round() as u32).min(width);
+                let x_end = (x_start + cell_height as u32).min(width);
                 let major_color =
                     Self::get_major_color_in_cell(&img, x_start, x_end, y_start, y_end);
                 let DmcColor { rgb, .. } = major_color.find_dmc();
