@@ -42,7 +42,7 @@ impl Canvas {
             }
         }
         let mut pxl_img = DynamicImage::new(width, height, ColorType::Rgb8);
-        let changed_colors = Self::get_palette(color_palette, 30);
+        let (.., changed_colors) = Self::get_palette(&color_palette, 30);
         for stitch in stitches {
             for y in stitch.y..((stitch.y as f32 + cell_height).ceil() as u32).min(height) {
                 for x in stitch.x..((stitch.x as f32 + cell_height).ceil() as u32).min(width) {
@@ -57,32 +57,35 @@ impl Canvas {
         Canvas { picture: pxl_img }
     }
 
-    fn get_palette(mut colors: HashSet<RgbColor>, colors_num: u8) -> HashMap<RgbColor, RgbColor> {
-        let palette: Vec<RgbColor> = colors.clone().into_iter().collect();
-        let mut diffs: Vec<(RgbColor, RgbColor, f32)> = vec![];
-        for i in 0..palette.len() - 1 {
-            let color = palette[i];
-            let lab1 = Lab::from_rgb(&color.into());
-            for j in i + 1..palette.len() {
-                let other_color = palette[j];
-                let lab2 = Lab::from_rgb(&other_color.into());
-                let diff = RgbColor::calculate_diff(lab1, lab2);
-                if diff != 0.0 && diff < 10.0 {
-                    diffs.push((color, other_color, diff));
-                }
-            }
+    fn get_palette(
+        colors: &HashSet<RgbColor>,
+        colors_num: u8,
+    ) -> (HashSet<RgbColor>, HashMap<RgbColor, RgbColor>) {
+        let mut palette: Vec<RgbColor> = colors.clone().into_iter().collect();
+        palette.sort_by(|color_1, color_2| {
+            let lab1 = Lab::from_rgb(&(*color_1).into());
+            let lab2 = Lab::from_rgb(&(*color_2).into());
+            lab1.b.partial_cmp(&lab2.b).unwrap_or(Ordering::Equal)
+        });
+
+        let mut changed_colors: HashMap<RgbColor, RgbColor> = HashMap::new();
+        let mut new_palette: HashSet<RgbColor> = HashSet::with_capacity(colors_num as usize);
+        while changed_colors.len() < colors_num as usize && !palette.is_empty() {
+            let target_color = palette.pop().unwrap();
+            let closest_color = palette
+                .iter()
+                .min_by_key(|&&color| {
+                    let lab_1 = Lab::from_rgb(&target_color.into());
+                    let lab_2 = Lab::from_rgb(&color.into());
+                    RgbColor::calculate_diff(lab_1, lab_2) as u32
+                })
+                .copied()
+                .unwrap_or(target_color);
+            new_palette.insert(closest_color);
+            changed_colors.insert(target_color, closest_color);
         }
-        diffs.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap());
-        let mut changed: HashMap<RgbColor, RgbColor> = HashMap::new();
-        while colors.len() > colors_num as usize {
-            if let Some(diff) = diffs.pop() {
-                changed.insert(diff.0, diff.1);
-                colors.remove(&diff.0);
-            } else {
-                break;
-            }
-        }
-        changed
+
+        (new_palette, changed_colors)
     }
 
     fn get_major_color_in_cell(
