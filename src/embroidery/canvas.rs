@@ -41,7 +41,7 @@ impl Canvas {
             }
         }
         let mut pxl_img = DynamicImage::new(width, height, ColorType::Rgb8);
-        let (.., changed_colors) = Self::get_palette(&color_palette, 30);
+        let (.., changed_colors) = Self::get_palette(color_palette, 30);
         for stitch in stitches {
             for y in stitch.y..((stitch.y as f32 + cell_height).ceil() as u32).min(height) {
                 for x in stitch.x..((stitch.x as f32 + cell_height).ceil() as u32).min(width) {
@@ -57,9 +57,13 @@ impl Canvas {
     }
 
     fn get_palette(
-        colors: &HashSet<RgbColor>,
-        colors_num: u8,
+        colors: HashSet<RgbColor>,
+        colors_num: usize,
     ) -> (HashSet<RgbColor>, HashMap<RgbColor, RgbColor>) {
+        let mut changed_colors: HashMap<RgbColor, RgbColor> = HashMap::new();
+        if colors.len() == colors_num {
+            return (colors, changed_colors);
+        }
         let mut palette: Vec<RgbColor> = colors.clone().into_iter().collect();
         palette.sort_by(|color_1, color_2| {
             let lab_1 = Lab::from_rgb(&(*color_1).into());
@@ -67,9 +71,8 @@ impl Canvas {
             lab_2.b.partial_cmp(&lab_1.b).unwrap_or(Ordering::Equal)
         });
 
-        let mut changed_colors: HashMap<RgbColor, RgbColor> = HashMap::new();
-        let mut new_palette: HashSet<RgbColor> = HashSet::with_capacity(colors_num as usize);
-        while changed_colors.len() < colors_num as usize && !palette.is_empty() {
+        let mut new_palette: HashSet<RgbColor> = HashSet::with_capacity(colors_num);
+        while changed_colors.len() < colors_num && !palette.is_empty() {
             let target_color = palette.pop().unwrap();
             let closest_color = palette
                 .iter()
