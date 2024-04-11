@@ -64,6 +64,7 @@ impl Canvas {
         if colors.len() == colors_num {
             return (colors, changed_colors);
         }
+        
         let mut palette: Vec<RgbColor> = colors.clone().into_iter().collect();
         palette.sort_by(|color_1, color_2| {
             let lab_1 = Lab::from_rgb(&(*color_1).into());
