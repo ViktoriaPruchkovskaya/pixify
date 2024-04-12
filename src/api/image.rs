@@ -17,11 +17,11 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
     let mut filename: String = String::new();
     let mut n_cells_in_width: Option<u8> = None;
     let mut n_colors: Option<u8> = None;
-    //TODO: validate number of provided files in one field
+
     while let Some(item) = payload.next().await {
         let field = item?;
-
         let content_disposition = field.content_disposition();
+
         if let Some(name) = content_disposition.get_name() {
             match name {
                 "file" => {
