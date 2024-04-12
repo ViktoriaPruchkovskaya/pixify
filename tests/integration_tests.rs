@@ -53,7 +53,7 @@ mod tests {
         let body = test::read_body(resp).await;
         assert_eq!(
             body,
-            Bytes::from_static(b"\"Invalid payload. Expected 'file'\"")
+            Bytes::from_static(b"\"Invalid payload. Expected 'file' to be provided\"")
         );
     }
 
