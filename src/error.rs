@@ -22,8 +22,8 @@ pub enum UploadError {
 
 #[derive(thiserror::Error, Debug)]
 pub enum InvalidPayloadError {
-    #[error("Missing property. Expected '{0}' to be provided")]
-    MissingProperty(String),
+    #[error("Missing value. Expected '{0}' to be provided")]
+    MissingValue(String),
     #[error("Invalid value in '{0}'. {1}")]
     InvalidValue(String, String),
 }

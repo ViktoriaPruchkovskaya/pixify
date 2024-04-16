@@ -45,17 +45,18 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
                 "n_cells_in_width" => {
                     let content = get_bytes(field).await?;
                     n_cells_in_width = Some(String::from_utf8(content)?.parse().map_err(|_| {
-                        UploadError::from(InvalidPayloadError::MissingProperty(
+                        UploadError::from(InvalidPayloadError::MissingValue(
                             "n_cells_in_width".into(),
                         ))
                     })?);
                 }
                 "n_colors" => {
                     let content = get_bytes(field).await?;
-                    n_colors =
-                        Some(String::from_utf8(content)?.parse().map_err(|_| {
-                            InvalidPayloadError::MissingProperty("n_colors".into())
-                        })?);
+                    n_colors = Some(
+                        String::from_utf8(content)?
+                            .parse()
+                            .map_err(|_| InvalidPayloadError::MissingValue("n_colors".into()))?,
+                    );
                     if n_colors.unwrap_or_default() > 200 {
                         return Err(UploadError::from(InvalidPayloadError::InvalidValue(
                             "n_colors".into(),
@@ -68,7 +69,7 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
         };
     }
     if buffer.is_empty() {
-        return Err(UploadError::from(InvalidPayloadError::MissingProperty(
+        return Err(UploadError::from(InvalidPayloadError::MissingValue(
             "file".into(),
         )));
     }
