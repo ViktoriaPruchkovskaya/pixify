@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use actix_web::{http, test, App};
+    use actix_web::{test, App};
     use bytes::Bytes;
-    use pixify::api::routes;
+    use pixify::{api::routes, http::multipart};
 
     #[actix_web::test]
     async fn it_gets_index() {
@@ -16,10 +16,10 @@ mod tests {
 
     #[actix_web::test]
     async fn it_uploads_image() {
-        let pic = include_bytes!("pic.png").to_vec();
         let app = test::init_service(App::new().configure(routes::services)).await;
+        let pic = include_bytes!("pic.png").to_vec();
 
-        let (header, payload) = build_multipart("file", &pic);
+        let (header, payload) = multipart::build("file", &pic);
         let req = test::TestRequest::post()
             .uri("/api/upload")
             .insert_header(header)
@@ -39,10 +39,10 @@ mod tests {
 
     #[actix_web::test]
     async fn it_uploads_image_in_wrong_field() {
-        let pic = include_bytes!("pic.png").to_vec();
         let app = test::init_service(App::new().configure(routes::services)).await;
+        let pic = include_bytes!("pic.png").to_vec();
 
-        let (header, payload) = build_multipart("wrong_field", &pic);
+        let (header, payload) = multipart::build("wrong_field", &pic);
         let req = test::TestRequest::post()
             .uri("/api/upload")
             .insert_header(header)
@@ -55,35 +55,5 @@ mod tests {
             body,
             Bytes::from_static(b"\"Invalid payload. Expected 'file' to be provided\"")
         );
-    }
-
-    fn build_multipart(
-        field: &str,
-        file_content: &Vec<u8>,
-    ) -> ((http::header::HeaderName, String), Vec<u8>) {
-        const BOUNDARY: &str = "12345";
-        let mut payload: Vec<u8> = format!(
-            "--{BOUNDARY}\r\n\
-        Content-Disposition: form-data; name=\"{field}\"; filename=\"pic.png\"\r\n\
-        Content-Type: image/png\r\n\
-        Content-Length: {}\r\n\r\n\
-        ",
-            file_content.len()
-        )
-        .as_bytes()
-        .to_vec();
-        payload.extend(file_content);
-        payload.extend(
-            format!(
-                "\r\n\
-        --{BOUNDARY}--\r\n"
-            )
-            .as_bytes(),
-        );
-        let header: (http::header::HeaderName, String) = (
-            http::header::CONTENT_TYPE,
-            format!("multipart/form-data; boundary={BOUNDARY}"),
-        );
-        (header, payload)
     }
 }

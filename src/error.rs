@@ -4,8 +4,8 @@ use std::string::FromUtf8Error;
 
 #[derive(thiserror::Error, Debug)]
 pub enum UploadError {
-    #[error("Invalid payload. Expected '{0}' to be provided")]
-    InvalidPayload(String),
+    #[error(transparent)]
+    InvalidPayload(#[from] InvalidPayloadError),
     #[error("Cannot extract a file from form")]
     Form(
         #[from]
@@ -18,6 +18,14 @@ pub enum UploadError {
     ImageFormat(#[from] std::io::Error),
     #[error(transparent)]
     Conversion(#[from] FromUtf8Error),
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum InvalidPayloadError {
+    #[error("Missing property. Expected '{0}' to be provided")]
+    MissingProperty(String),
+    #[error("Invalid value in '{0}'. {1}")]
+    InvalidValue(String, String),
 }
 
 impl ResponseError for UploadError {
