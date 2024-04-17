@@ -40,10 +40,12 @@ impl Canvas {
         let rows = (height as f32 / cell_height).round() as u32;
 
         let mut color_palette: HashSet<RgbColor> = HashSet::new();
+        // let mut canvas: Vec<Vec<RgbColor>> = Vec::with_capacity(rows as usize); //matrix
         let mut stitches: Vec<Stitch> = vec![];
         for y in 0..rows {
             let y_start = (y as f32 * cell_height).round() as u32;
             let y_end = (y_start + cell_height as u32).min(height);
+            // let mut row: Vec<RgbColor> = vec![];
             for x in 0..n_cells_in_width {
                 let x_start = (x as f32 * cell_height).round() as u32;
                 let x_end = (x_start + cell_height as u32).min(width);
@@ -55,8 +57,10 @@ impl Canvas {
                     y: y_start,
                     color: rgb,
                 });
+                // row.push(rgb);
                 color_palette.insert(rgb);
             }
+            // canvas.push(row)
         }
 
         let (.., changed_colors) = Self::get_palette(color_palette, n_colors);
