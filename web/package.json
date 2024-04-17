@@ -1,0 +1,25 @@
+{
+  "name": "pixify",
+  "version": "1.0.0",
+  "description": "",
+  "source": "src/public/index.html",
+  "scripts": {
+    "start": "parcel -p 8081",
+    "build": "parcel build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.79",
+    "@types/react-dom": "^18.2.25",
+    "parcel": "^2.12.0",
+    "process": "^0.11.10",
+    "typescript": "^5.4.5"
+  }
+}

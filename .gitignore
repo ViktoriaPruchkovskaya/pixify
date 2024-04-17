@@ -1,3 +1,8 @@
-/target
+server/target
+
+**/.parcel-cache
+**/node_modules
+**/dist
+
 .idea
 .DS_Store
