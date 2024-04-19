@@ -2,7 +2,7 @@
   "name": "pixify",
   "version": "1.0.0",
   "description": "",
-  "source": "src/public/index.html",
+  "source": "src/index.html",
   "scripts": {
     "start": "parcel -p 8081",
     "build": "parcel build",

@@ -1,7 +1,12 @@
+import {useState} from "react";
+import ImageForm from "./components/ImageUpload/ImageForm";
+
 export default function App() {
+    const [image, setImage] = useState<Blob>();
     return (
         <div>
-            <h1>Welcome to my app</h1>
+            <ImageForm onImageReceived={setImage}/>
+            {image && <img src={URL.createObjectURL(image)}/>}
         </div>
     );
 }
