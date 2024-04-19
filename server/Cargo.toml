@@ -13,3 +13,4 @@ thiserror = "1.0"
 image = { version = "0.24.9", features = ["png"] }
 bytes = "1.5.0"
 lab = "0.11.0"
+serde = { version = "1.0.197", features = ["derive"] }

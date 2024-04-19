@@ -1,8 +1,9 @@
 use image::Rgb;
 use lab::Lab;
+use serde::Serialize;
 use std::f32::consts::PI;
 
-#[derive(Debug, Copy, Clone, PartialEq, Hash, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Hash, Eq, Serialize)]
 pub struct RgbColor {
     pub red: u8,
     pub green: u8,

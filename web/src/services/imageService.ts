@@ -3,7 +3,7 @@ export class ImageService {
         img: File,
         colorsNum: string,
         cellsNum: string
-    }): Promise<Blob> {
+    }): Promise<number[][][]> {
         const formData = new FormData();
         formData.append("file", img);
         formData.append("n_colors", colorsNum);
@@ -17,6 +17,6 @@ export class ImageService {
             const message = await res.text()
             throw new Error(`Request failed. Status code: ${res.status}. Message: ${message}`)
         }
-        return res.blob()
+        return res.json()
     }
 }

@@ -2,7 +2,7 @@ import * as React from "react";
 import {ImageService} from "../../services/imageService";
 
 interface UploadImageFormProps {
-    onImageReceived: (image: Blob) => void;
+    onImageReceived: (image: number[][][]) => void;
 }
 
 export default function ImageForm({onImageReceived}: UploadImageFormProps) {
@@ -10,11 +10,11 @@ export default function ImageForm({onImageReceived}: UploadImageFormProps) {
         event.preventDefault();
         const {colorsNum, cellsNum, image} = event.target as HTMLFormElement;
         (async () => {
-            let embroidery = await (new ImageService().uploadImage({
+            let embroidery = await new ImageService().uploadImage({
                 img: image.files.item(0),
                 colorsNum: colorsNum.value,
                 cellsNum: cellsNum.value
-            }));
+            });
             onImageReceived(embroidery);
         })()
     }
