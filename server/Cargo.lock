@@ -1020,6 +1020,7 @@ dependencies = [
  "futures-util",
  "image",
  "lab",
+ "serde",
  "thiserror",
 ]
 

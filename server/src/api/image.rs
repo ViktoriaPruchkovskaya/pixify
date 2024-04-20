@@ -79,15 +79,16 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
         .map_err(UploadError::ImageFormat)?
         .decode()?;
     let config = CanvasConfig::new(img, n_cells_in_width, n_colors);
-    let pxl_img = Canvas::new(config).picture;
+    let embroidery = Canvas::new(config).picture;
 
-    let mut bytes: Vec<u8> = Vec::new();
-    pxl_img.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
-    Ok(HttpResponse::Ok()
-        .content_type("image/png")
-        .append_header((
-            "Content-Disposition",
-            format!("attachment; filename={filename}"),
-        ))
-        .body(bytes))
+    // let mut bytes: Vec<u8> = Vec::new();
+    // pxl_img.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
+    // Ok(HttpResponse::Ok()
+    //     .content_type("image/png")
+    //     .append_header((
+    //         "Content-Disposition",
+    //         format!("attachment; filename={filename}"),
+    //     ))
+    //     .body(bytes))
+    Ok(HttpResponse::Ok().json(embroidery))
 }
