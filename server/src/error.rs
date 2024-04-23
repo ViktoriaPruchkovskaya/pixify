@@ -18,6 +18,8 @@ pub enum UploadError {
     ImageFormat(#[from] std::io::Error),
     #[error(transparent)]
     Conversion(#[from] FromUtf8Error),
+    #[error(transparent)]
+    Canvas(#[from] CanvasError),
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -36,4 +38,10 @@ impl ResponseError for UploadError {
             s => HttpResponse::InternalServerError().json(s.to_string()),
         }
     }
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum CanvasError {
+    #[error("Cannot extract a file from form")]
+    DmcNotFound,
 }

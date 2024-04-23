@@ -1,13 +1,26 @@
 use image::Rgb;
 use lab::Lab;
-use serde::Serialize;
+use serde::{ser::SerializeSeq, Serialize, Serializer};
 use std::f32::consts::PI;
 
-#[derive(Debug, Copy, Clone, PartialEq, Hash, Eq, Serialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Hash, Eq)]
 pub struct RgbColor {
     pub red: u8,
     pub green: u8,
     pub blue: u8,
+}
+
+impl Serialize for RgbColor {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_seq(Some(3))?;
+        state.serialize_element(&self.red)?;
+        state.serialize_element(&self.green)?;
+        state.serialize_element(&self.blue)?;
+        state.end()
+    }
 }
 
 impl From<Rgb<u8>> for RgbColor {
