@@ -42,6 +42,6 @@ impl ResponseError for UploadError {
 
 #[derive(thiserror::Error, Debug)]
 pub enum CanvasError {
-    #[error("Cannot extract a file from form")]
+    #[error("Error during DMC determination")]
     DmcNotFound,
 }
