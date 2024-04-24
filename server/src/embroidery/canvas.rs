@@ -1,13 +1,15 @@
 use crate::embroidery::colors::{DmcColor, RgbColor};
+use crate::error::CanvasError;
 use image::{DynamicImage, GenericImageView, Pixel, Rgb};
 use lab::Lab;
+use palette_extract::{get_palette_with_options, MaxColors, PixelEncoding, PixelFilter, Quality};
 use std::cmp::Ordering;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 pub struct CanvasConfig {
     pub img: DynamicImage,
     pub n_cells_in_width: u8,
-    pub n_colors: usize,
+    pub n_colors: u8,
 }
 
 impl CanvasConfig {
@@ -15,7 +17,7 @@ impl CanvasConfig {
         CanvasConfig {
             img,
             n_cells_in_width: n_cells_in_width.unwrap_or(32),
-            n_colors: n_colors.unwrap_or(20) as usize,
+            n_colors: n_colors.unwrap_or(20),
         }
     }
 }
@@ -28,107 +30,61 @@ struct Stitch {
 }
 
 pub struct Canvas {
-    pub picture: Vec<Vec<[u8; 3]>>,
+    pub picture: Vec<Vec<RgbColor>>,
 }
 
 impl Canvas {
-    pub fn new(config: CanvasConfig) -> Canvas {
+    pub fn new(config: CanvasConfig) -> Result<Canvas, CanvasError> {
         let n_cells_in_width = config.n_cells_in_width;
-        let n_colors = config.n_colors;
         let (width, height) = config.img.dimensions();
         let cell_height = width as f32 / n_cells_in_width as f32;
         let rows = (height as f32 / cell_height).round() as u32;
 
-        let mut color_palette: HashSet<RgbColor> = HashSet::new();
-        let mut canvas: Vec<Vec<RgbColor>> = Vec::with_capacity(rows as usize); //matrix
-        let mut stitches: Vec<Stitch> = vec![];
+        let palette = Self::get_image_palette(&config.img, config.n_colors);
+        let dmc_palette = Self::convert_colors_to_dmc(&palette);
+
+        let mut canvas: Vec<Vec<RgbColor>> = Vec::with_capacity(rows as usize);
+        // let mut stitches: Vec<Stitch> = vec![];
         for y in 0..rows {
             let y_start = (y as f32 * cell_height).round() as u32;
             let y_end = (y_start + cell_height as u32).min(height);
-            let mut row: Vec<RgbColor> = vec![];
+
+            let mut row: Vec<RgbColor> = Vec::with_capacity(n_cells_in_width as usize);
             for x in 0..n_cells_in_width {
                 let x_start = (x as f32 * cell_height).round() as u32;
                 let x_end = (x_start + cell_height as u32).min(width);
+
                 let major_color =
                     Self::get_major_color_in_cell(&config.img, x_start, x_end, y_start, y_end);
-                let DmcColor { rgb, .. } = major_color.find_dmc();
-                stitches.push(Stitch {
-                    x: x_start,
-                    y: y_start,
-                    color: rgb,
-                });
-                row.push(rgb);
-                color_palette.insert(rgb);
+                let major_color_lab = Lab::from_rgb(&major_color.into());
+                let closest_color = dmc_palette
+                    .iter()
+                    .min_by_key(|&&c| {
+                        let dmc_color_lab = Lab::from_rgb(&c.into());
+                        RgbColor::calculate_diff(major_color_lab, dmc_color_lab) as u32
+                    })
+                    .ok_or(CanvasError::DmcNotFound)?;
+
+                // stitches.push(Stitch {
+                //     x: x_start,
+                //     y: y_start,
+                //     color: *closest_color,
+                // });
+                row.push(*closest_color);
             }
             canvas.push(row)
         }
-
-        let (.., changed_colors) = Self::get_palette(color_palette, n_colors);
-        let embroidery: Vec<Vec<[u8; 3]>> = canvas
-            .iter()
-            .map(|row| {
-                row.iter()
-                    .map(|cell| {
-                        let mut color: [u8; 3] = (*cell).into();
-                        if let Some(changed_color) = changed_colors.get(cell) {
-                            color = (*changed_color).into();
-                        }
-                        color
-                    })
-                    .collect()
-            })
-            .collect();
 
         // let mut pxl_img = DynamicImage::new(width, height, ColorType::Rgb8);
         // for stitch in stitches {
         //     for y in stitch.y..((stitch.y as f32 + cell_height).ceil() as u32).min(height) {
         //         for x in stitch.x..((stitch.x as f32 + cell_height).ceil() as u32).min(width) {
         //             let mut color: Rgb<u8> = stitch.color.into();
-        //             if let Some(changed_color) = changed_colors.get(&stitch.color) {
-        //                 color = (*changed_color).into();
-        //             }
         //             pxl_img.put_pixel(x, y, color.to_rgba());
         //         }
         //     }
         // }
-        Canvas {
-            picture: embroidery,
-        }
-    }
-
-    fn get_palette(
-        colors: HashSet<RgbColor>,
-        n_colors: usize,
-    ) -> (HashSet<RgbColor>, HashMap<RgbColor, RgbColor>) {
-        let mut changed_colors: HashMap<RgbColor, RgbColor> = HashMap::new();
-        if colors.len() == n_colors {
-            return (colors, changed_colors);
-        }
-
-        let mut palette: Vec<RgbColor> = colors.clone().into_iter().collect();
-        palette.sort_by(|color_1, color_2| {
-            let lab_1 = Lab::from_rgb(&(*color_1).into());
-            let lab_2 = Lab::from_rgb(&(*color_2).into());
-            lab_2.b.partial_cmp(&lab_1.b).unwrap_or(Ordering::Equal)
-        });
-
-        let mut new_palette: HashSet<RgbColor> = HashSet::with_capacity(n_colors);
-        while palette.len() > n_colors && !palette.is_empty() {
-            let target_color = palette.pop().unwrap();
-            let closest_color = palette
-                .iter()
-                .min_by_key(|&&color| {
-                    let lab_1 = Lab::from_rgb(&target_color.into());
-                    let lab_2 = Lab::from_rgb(&color.into());
-                    RgbColor::calculate_diff(lab_1, lab_2) as u32
-                })
-                .copied()
-                .unwrap_or(target_color);
-            new_palette.insert(closest_color);
-            changed_colors.insert(target_color, closest_color);
-        }
-
-        (new_palette, changed_colors)
+        Ok(Canvas { picture: canvas })
     }
 
     fn get_major_color_in_cell(
@@ -158,5 +114,34 @@ impl Canvas {
             lab_1.b.partial_cmp(&lab_2.b).unwrap_or(Ordering::Equal)
         });
         sorted_entries[0].0.into()
+    }
+
+    fn get_image_palette(img: &DynamicImage, n_colors: u8) -> Vec<RgbColor> {
+        let pixels = img.to_rgb8();
+        let mut colors = get_palette_with_options(
+            &pixels,
+            PixelEncoding::Rgb,
+            Quality::new(10),
+            MaxColors::new(n_colors - 1),
+            PixelFilter::None,
+        );
+
+        colors
+            .iter_mut()
+            .map(|val| RgbColor {
+                red: val.r,
+                green: val.g,
+                blue: val.b,
+            })
+            .collect()
+    }
+
+    fn convert_colors_to_dmc(colors: &Vec<RgbColor>) -> Vec<RgbColor> {
+        let mut dmc_colors: Vec<RgbColor> = Vec::with_capacity(colors.len());
+        for color in colors {
+            let DmcColor { rgb, .. } = color.find_dmc();
+            dmc_colors.push(rgb);
+        }
+        dmc_colors
     }
 }
