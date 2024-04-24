@@ -1,9 +1,14 @@
+export interface Canvas {
+    embroidery: number[][][],
+    palette: { symbol: number, color: { rgb: number[], name: string } }[]
+}
+
 export class ImageService {
     public async uploadImage({img, colorsNum, cellsNum}: {
         img: File,
         colorsNum: string,
         cellsNum: string
-    }): Promise<number[][][]> {
+    }): Promise<Canvas> {
         const formData = new FormData();
         formData.append("file", img);
         formData.append("n_colors", colorsNum);

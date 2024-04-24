@@ -1,17 +1,18 @@
 import {useState} from "react";
 import ImageForm from "./components/ImageUpload/ImageForm";
 import EmbroideryCanvas from "./components/EmbroideryCanvas/EmbroideryCanvas";
+import {Canvas} from "./services/imageService";
 
 export default function App() {
-    const [image, setImage] = useState<number[][][]>([]);
+    const [canvas, setCanvas] = useState<Canvas>({embroidery: [], palette: [{color: {name: "", rgb: []}, symbol: 0}]});
     const displayCanvas = () => {
-        if (image.length) {
-            return <EmbroideryCanvas canvas={image}/>
+        if (canvas?.embroidery.length) {
+            return <EmbroideryCanvas canvas={canvas}/>
         }
     }
     return (
         <div>
-            <ImageForm onImageReceived={setImage}/>
+            <ImageForm onCanvasReceived={setCanvas}/>
             {(displayCanvas)()}
         </div>
     );

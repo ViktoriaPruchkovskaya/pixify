@@ -55,7 +55,7 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
                     let value = String::from_utf8(content)?
                         .parse()
                         .map_err(|_| InvalidPayloadError::MissingValue("n_colors".into()))?;
-                    if value <= 2 || value > 200 {
+                    if value > 200 {
                         return Err(UploadError::from(InvalidPayloadError::InvalidValue(
                             "n_colors".into(),
                             "Value should be bigger than 2 and less than 200".into(),
@@ -78,7 +78,7 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
         .map_err(UploadError::ImageFormat)?
         .decode()?;
     let config = CanvasConfig::new(img, n_cells_in_width, n_colors);
-    let embroidery = Canvas::new(config)?.picture;
+    let canvas = Canvas::new(config)?;
 
     // let mut bytes: Vec<u8> = Vec::new();
     // pxl_img.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
@@ -89,5 +89,5 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
     //         format!("attachment; filename={filename}"),
     //     ))
     //     .body(bytes))
-    Ok(HttpResponse::Ok().json(embroidery))
+    Ok(HttpResponse::Ok().json(canvas))
 }
