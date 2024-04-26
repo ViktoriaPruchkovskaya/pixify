@@ -15,6 +15,12 @@ importers:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
     devDependencies:
+      '@parcel/config-default':
+        specifier: ^2.12.0
+        version: 2.12.0(@parcel/core@2.12.0(@swc/helpers@0.5.10))(@swc/helpers@0.5.10)(srcset@4.0.0)(typescript@5.4.5)
+      '@parcel/validator-typescript':
+        specifier: ^2.12.0
+        version: 2.12.0(@parcel/core@2.12.0(@swc/helpers@0.5.10))(@swc/helpers@0.5.10)(typescript@5.4.5)
       '@types/react':
         specifier: ^18.2.79
         version: 18.2.79
@@ -324,12 +330,24 @@ packages:
     resolution: {integrity: sha512-cZJqGRJ4JNdYcb+vj94J7PdOuTnwyy45dM9xqbIMH+HSiiIkfrMsdEwYft0GTyFTdsnf+hdHn3tau7Qa5hhX+A==}
     engines: {node: '>= 12.0.0', parcel: ^2.12.0}
 
+  '@parcel/ts-utils@2.12.0':
+    resolution: {integrity: sha512-zou+W6dcqnXXUOfN5zGM+ePIWbYOhGp8bVB2jICoNkoKmNAHd4l4zeHl5yQXnbZfynVw88cZVqxtXS8tYebelg==}
+    engines: {node: '>= 12.0.0'}
+    peerDependencies:
+      typescript: '>=3.0.0'
+
   '@parcel/types@2.12.0':
     resolution: {integrity: sha512-8zAFiYNCwNTQcglIObyNwKfRYQK5ELlL13GuBOrSMxueUiI5ylgsGbTS1N7J3dAGZixHO8KhHGv5a71FILn9rQ==}
 
   '@parcel/utils@2.12.0':
     resolution: {integrity: sha512-z1JhLuZ8QmDaYoEIuUCVZlhcFrS7LMfHrb2OCRui5SQFntRWBH2fNM6H/fXXUkT9SkxcuFP2DUA6/m4+Gkz72g==}
     engines: {node: '>= 12.0.0'}
+
+  '@parcel/validator-typescript@2.12.0':
+    resolution: {integrity: sha512-oiAG/MA6Ycbv106KCAQAwwVKdDdpyvK8xWJ47wme726Nkc6YO/UCoHBqIFTld8+PC7QD3U0XY5Y4kavm3n+lMQ==}
+    engines: {node: '>= 12.0.0', parcel: ^2.12.0}
+    peerDependencies:
+      typescript: '>=3.0.0'
 
   '@parcel/watcher-android-arm64@2.4.1':
     resolution: {integrity: sha512-LOi/WTbbh3aTn2RYddrO8pnapixAziFl6SMxHM69r3tvdSm94JtCenaKgk1GRg5FJ5wpMCpHeW+7yqPlvZv7kg==}
@@ -1588,6 +1606,11 @@ snapshots:
       - '@parcel/core'
       - '@swc/helpers'
 
+  '@parcel/ts-utils@2.12.0(typescript@5.4.5)':
+    dependencies:
+      nullthrows: 1.1.1
+      typescript: 5.4.5
+
   '@parcel/types@2.12.0(@parcel/core@2.12.0(@swc/helpers@0.5.10))(@swc/helpers@0.5.10)':
     dependencies:
       '@parcel/cache': 2.12.0(@parcel/core@2.12.0(@swc/helpers@0.5.10))(@swc/helpers@0.5.10)
@@ -1611,6 +1634,18 @@ snapshots:
       '@parcel/source-map': 2.1.1
       chalk: 4.1.2
       nullthrows: 1.1.1
+
+  '@parcel/validator-typescript@2.12.0(@parcel/core@2.12.0(@swc/helpers@0.5.10))(@swc/helpers@0.5.10)(typescript@5.4.5)':
+    dependencies:
+      '@parcel/diagnostic': 2.12.0
+      '@parcel/plugin': 2.12.0(@parcel/core@2.12.0(@swc/helpers@0.5.10))(@swc/helpers@0.5.10)
+      '@parcel/ts-utils': 2.12.0(typescript@5.4.5)
+      '@parcel/types': 2.12.0(@parcel/core@2.12.0(@swc/helpers@0.5.10))(@swc/helpers@0.5.10)
+      '@parcel/utils': 2.12.0
+      typescript: 5.4.5
+    transitivePeerDependencies:
+      - '@parcel/core'
+      - '@swc/helpers'
 
   '@parcel/watcher-android-arm64@2.4.1':
     optional: true
