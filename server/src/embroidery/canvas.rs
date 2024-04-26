@@ -23,17 +23,12 @@ impl CanvasConfig {
     }
 }
 
-// #[derive(Debug)]
-// struct Stitch {
-//     pub x: u32,
-//     pub y: u32,
-//     color: RgbColor,
-// }
 #[derive(Serialize)]
 pub struct Canvas {
     pub embroidery: Vec<Vec<RgbColor>>,
     pub palette: Vec<Palette>,
 }
+
 #[derive(Serialize)]
 pub struct Palette {
     symbol: usize,
@@ -72,25 +67,11 @@ impl Canvas {
                     })
                     .ok_or(CanvasError::DmcNotFound)?;
 
-                // stitches.push(Stitch {
-                //     x: x_start,
-                //     y: y_start,
-                //     color: *closest_color,
-                // });
                 row.push(closest_color.rgb);
             }
             canvas.push(row)
         }
 
-        // let mut pxl_img = DynamicImage::new(width, height, ColorType::Rgb8);
-        // for stitch in stitches {
-        //     for y in stitch.y..((stitch.y as f32 + cell_height).ceil() as u32).min(height) {
-        //         for x in stitch.x..((stitch.x as f32 + cell_height).ceil() as u32).min(width) {
-        //             let mut color: Rgb<u8> = stitch.color.into();
-        //             pxl_img.put_pixel(x, y, color.to_rgba());
-        //         }
-        //     }
-        // }
         Ok(Canvas {
             embroidery: canvas,
             palette: Self::get_dmc_palette(&dmc_embroidery_colors),

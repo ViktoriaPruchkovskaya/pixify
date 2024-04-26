@@ -28,11 +28,6 @@ mod tests {
         let resp = test::call_service(&app, req).await;
 
         assert!(resp.status().is_success());
-        // assert_eq!(resp.headers().get("content-type").unwrap(), "image/png");
-        // assert_eq!(
-        //     resp.headers().get("content-disposition").unwrap(),
-        //     "attachment; filename=pic.png"
-        // );
         let body = test::read_body(resp).await;
         assert!(!body.is_empty());
     }

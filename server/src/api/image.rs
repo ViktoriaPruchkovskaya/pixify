@@ -17,7 +17,6 @@ pub async fn index() -> &'static str {
 pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError> {
     let mut fields: HashSet<String> = HashSet::new();
     let mut buffer: Vec<u8> = Vec::new();
-    let mut filename: String = String::new();
     let mut n_cells_in_width: Option<u8> = None;
     let mut n_colors: Option<u8> = None;
 
@@ -36,10 +35,6 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
             }
             match name {
                 "file" => {
-                    filename = content_disposition
-                        .get_filename()
-                        .unwrap_or("filename")
-                        .to_string();
                     buffer = get_bytes(field).await?;
                 }
                 "n_cells_in_width" => {
@@ -80,14 +75,5 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
     let config = CanvasConfig::new(img, n_cells_in_width, n_colors);
     let canvas = Canvas::new(config)?;
 
-    // let mut bytes: Vec<u8> = Vec::new();
-    // pxl_img.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
-    // Ok(HttpResponse::Ok()
-    //     .content_type("image/png")
-    //     .append_header((
-    //         "Content-Disposition",
-    //         format!("attachment; filename={filename}"),
-    //     ))
-    //     .body(bytes))
     Ok(HttpResponse::Ok().json(canvas))
 }
