@@ -1,21 +1,21 @@
 import * as React from "react";
-import {ImageService} from "../../services/imageService";
+import {Canvas, ImageService} from "../../services/imageService";
 
 interface UploadImageFormProps {
-    onImageReceived: (image: number[][][]) => void;
+    onCanvasReceived: (canvas: Canvas) => void;
 }
 
-export default function ImageForm({onImageReceived}: UploadImageFormProps) {
+export default function ImageForm({onCanvasReceived}: UploadImageFormProps) {
     const handleForm = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const {colorsNum, cellsNum, image} = event.target as HTMLFormElement;
         (async () => {
-            let embroidery = await new ImageService().uploadImage({
+            let canvas = await new ImageService().uploadImage({
                 img: image.files.item(0),
                 colorsNum: colorsNum.value,
                 cellsNum: cellsNum.value
             });
-            onImageReceived(embroidery);
+            onCanvasReceived(canvas);
         })()
     }
     return (<form onSubmit={handleForm}>

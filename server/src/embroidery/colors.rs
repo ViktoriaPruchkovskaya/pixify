@@ -45,6 +45,7 @@ impl From<RgbColor> for [u8; 3] {
     }
 }
 
+#[derive(Clone, Copy, Serialize)]
 pub struct DmcColor {
     pub name: &'static str,
     pub rgb: RgbColor,

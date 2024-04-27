@@ -1,8 +1,13 @@
 {
+  "include": [
+    "src/**/*"
+  ],
   "compilerOptions": {
     "module": "ESNext",
     "target": "ESNext",
     "moduleResolution": "node",
+    "noImplicitAny": true,
+    "strict": true,
     "lib": [
       "DOM",
       "ESNext"
