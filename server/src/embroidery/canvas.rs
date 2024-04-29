@@ -46,7 +46,6 @@ impl Canvas {
         let dmc_embroidery_colors = Self::convert_rgb_to_dmc(&embroidery_colors);
 
         let mut canvas: Vec<Vec<RgbColor>> = Vec::with_capacity(rows as usize);
-        // let mut stitches: Vec<Stitch> = vec![];
         for y in 0..rows {
             let y_start = (y as f32 * cell_height).round() as u32;
             let y_end = (y_start + cell_height as u32).min(height);
