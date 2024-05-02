@@ -1,12 +1,24 @@
-use crate::embroidery::canvas::{Canvas, CanvasConfig};
-use crate::error::{InvalidPayloadError, UploadError};
-use crate::http::multipart::get_bytes;
 use actix_multipart::Multipart;
 use actix_web::{get, post, HttpResponse};
 use futures_util::StreamExt;
-use image::{io::Reader as ImageReader, DynamicImage};
 use std::collections::HashSet;
-use std::io::Cursor;
+
+use crate::embroidery::canvas::{Canvas, CanvasConfig};
+use crate::error::{InvalidPayloadError, UploadError};
+use crate::http::multipart::get_bytes;
+
+#[derive(Default)]
+struct ImageData {
+    pub file: FileData,
+    pub n_cells_in_width: Option<u8>,
+    pub n_colors: Option<u8>,
+}
+
+#[derive(Default)]
+struct FileData {
+    pub buffer: Vec<u8>,
+    pub filename: String,
+}
 
 #[get("/")]
 pub async fn index() -> &'static str {
@@ -15,10 +27,17 @@ pub async fn index() -> &'static str {
 
 #[post("/upload")]
 pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError> {
+    let data: ImageData = get_data_from_payload(&mut payload).await?;
+
+    let config = CanvasConfig::new(data.file.buffer, data.n_cells_in_width, data.n_colors)?;
+    let canvas = Canvas::new(config)?;
+
+    Ok(HttpResponse::Ok().json(canvas))
+}
+
+async fn get_data_from_payload(payload: &mut Multipart) -> Result<ImageData, UploadError> {
     let mut fields: HashSet<String> = HashSet::new();
-    let mut buffer: Vec<u8> = Vec::new();
-    let mut n_cells_in_width: Option<u8> = None;
-    let mut n_colors: Option<u8> = None;
+    let mut data: ImageData = Default::default();
 
     while let Some(item) = payload.next().await {
         let field = item?;
@@ -27,7 +46,7 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
         if let Some(name) = content_disposition.get_name() {
             if fields.contains(name) {
                 return Err(UploadError::from(InvalidPayloadError::InvalidValue(
-                    "file".into(),
+                    name.into(),
                     "Field should contain 1 item".into(),
                 )));
             } else {
@@ -35,45 +54,43 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
             }
             match name {
                 "file" => {
-                    buffer = get_bytes(field).await?;
+                    data.file.filename = content_disposition
+                        .get_filename()
+                        .unwrap_or("filename")
+                        .to_string();
+                    data.file.buffer = get_bytes(field).await?;
                 }
                 "n_cells_in_width" => {
                     let content = get_bytes(field).await?;
-                    n_cells_in_width = Some(String::from_utf8(content)?.parse().map_err(|_| {
-                        UploadError::from(InvalidPayloadError::MissingValue(
-                            "n_cells_in_width".into(),
-                        ))
-                    })?);
+                    data.n_cells_in_width =
+                        Some(String::from_utf8(content)?.parse().map_err(|_| {
+                            UploadError::from(InvalidPayloadError::MissingValue(
+                                "n_cells_in_width".into(),
+                            ))
+                        })?);
                 }
                 "n_colors" => {
                     let content = get_bytes(field).await?;
                     let value = String::from_utf8(content)?
                         .parse()
                         .map_err(|_| InvalidPayloadError::MissingValue("n_colors".into()))?;
+
                     if value > 200 {
                         return Err(UploadError::from(InvalidPayloadError::InvalidValue(
                             "n_colors".into(),
                             "Value should be bigger than 2 and less than 200".into(),
                         )));
                     }
-                    n_colors = Some(value);
+                    data.n_colors = Some(value);
                 }
                 _ => {}
             }
         };
     }
-    if buffer.is_empty() {
+    if data.file.buffer.is_empty() {
         return Err(UploadError::from(InvalidPayloadError::MissingValue(
             "file".into(),
         )));
     }
-
-    let img: DynamicImage = ImageReader::new(Cursor::new(buffer))
-        .with_guessed_format()
-        .map_err(UploadError::ImageFormat)?
-        .decode()?;
-    let config = CanvasConfig::new(img, n_cells_in_width, n_colors);
-    let canvas = Canvas::new(config)?;
-
-    Ok(HttpResponse::Ok().json(canvas))
+    Ok(data)
 }

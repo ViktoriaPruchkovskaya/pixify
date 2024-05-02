@@ -1,11 +1,13 @@
-use crate::embroidery::colors::{DmcColor, RgbColor};
-use crate::error::CanvasError;
-use image::{DynamicImage, GenericImageView, Pixel, Rgb};
+use image::{io::Reader as ImageReader, DynamicImage, GenericImageView, Pixel, Rgb};
 use lab::Lab;
 use palette_extract::{get_palette_with_options, MaxColors, PixelEncoding, PixelFilter, Quality};
 use serde::Serialize;
 use std::cmp::Ordering;
 use std::collections::HashMap;
+use std::io::Cursor;
+
+use crate::embroidery::colors::{DmcColor, RgbColor};
+use crate::error::CanvasError;
 
 pub struct CanvasConfig {
     pub img: DynamicImage,
@@ -14,12 +16,21 @@ pub struct CanvasConfig {
 }
 
 impl CanvasConfig {
-    pub fn new(img: DynamicImage, n_cells_in_width: Option<u8>, n_colors: Option<u8>) -> Self {
-        CanvasConfig {
+    pub fn new(
+        bytes: Vec<u8>,
+        n_cells_in_width: Option<u8>,
+        n_colors: Option<u8>,
+    ) -> Result<Self, CanvasError> {
+        let img: DynamicImage = ImageReader::new(Cursor::new(bytes))
+            .with_guessed_format()
+            .map_err(CanvasError::ImageFormat)?
+            .decode()?;
+
+        Ok(CanvasConfig {
             img,
             n_cells_in_width: n_cells_in_width.unwrap_or(32),
             n_colors: n_colors.unwrap_or(20),
-        }
+        })
     }
 }
 
@@ -27,6 +38,9 @@ impl CanvasConfig {
 pub struct Canvas {
     pub embroidery: Vec<Vec<RgbColor>>,
     pub palette: Vec<Palette>,
+
+    #[serde(skip)]
+    config: CanvasConfig,
 }
 
 #[derive(Serialize)]
@@ -36,7 +50,7 @@ pub struct Palette {
 }
 
 impl Canvas {
-    pub fn new(config: CanvasConfig) -> Result<Canvas, CanvasError> {
+    pub fn new(config: CanvasConfig) -> Result<Self, CanvasError> {
         let n_cells_in_width = config.n_cells_in_width;
         let (width, height) = config.img.dimensions();
         let cell_height = width as f32 / n_cells_in_width as f32;
@@ -74,6 +88,7 @@ impl Canvas {
         Ok(Canvas {
             embroidery: canvas,
             palette: Self::get_dmc_palette(&dmc_embroidery_colors),
+            config,
         })
     }
 

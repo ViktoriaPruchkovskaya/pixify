@@ -11,7 +11,7 @@ pub async fn get_bytes(mut field: Field) -> Result<Vec<u8>, MultipartError> {
     Ok(bytes)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct MultipartBuilder<'a> {
     files: Vec<(String, String, &'a Vec<u8>)>,
     texts: Vec<(String, String)>,
@@ -78,11 +78,5 @@ impl<'a> MultipartBuilder<'a> {
             format!("multipart/form-data; boundary={BOUNDARY}"),
         );
         (header, payload)
-    }
-}
-
-impl<'a> Default for MultipartBuilder<'a> {
-    fn default() -> Self {
-        MultipartBuilder::new()
     }
 }

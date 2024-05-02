@@ -13,10 +13,6 @@ pub enum UploadError {
         MultipartError,
     ),
     #[error(transparent)]
-    Image(#[from] image::ImageError),
-    #[error(transparent)]
-    ImageFormat(#[from] std::io::Error),
-    #[error(transparent)]
     Conversion(#[from] FromUtf8Error),
     #[error(transparent)]
     Canvas(#[from] CanvasError),
@@ -44,4 +40,8 @@ impl ResponseError for UploadError {
 pub enum CanvasError {
     #[error("Error during DMC determination")]
     DmcNotFound,
+    #[error(transparent)]
+    ImageFormat(#[from] std::io::Error),
+    #[error(transparent)]
+    Image(#[from] image::ImageError),
 }
