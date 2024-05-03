@@ -20,11 +20,6 @@ struct FileData {
     pub filename: String,
 }
 
-#[get("/")]
-pub async fn index() -> &'static str {
-    "Hello world!"
-}
-
 #[post("/upload")]
 pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError> {
     let data: ImageData = get_data_from_payload(&mut payload).await?;
