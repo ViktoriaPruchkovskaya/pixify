@@ -3,12 +3,15 @@ struct CanvasResponse {
     pub embroidery: Vec<Vec<[u8; 3]>>,
     pub palette: Vec<Palette>,
 }
+
 #[derive(serde::Deserialize)]
+#[allow(unused)]
 struct Palette {
     pub symbol: usize,
     pub color: Color,
 }
 #[derive(serde::Deserialize)]
+#[allow(unused)]
 struct Color {
     pub name: String,
     pub rgb: [u8; 3],

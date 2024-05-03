@@ -1,4 +1,6 @@
-use image::{io::Reader as ImageReader, DynamicImage, GenericImageView, Pixel, Rgb};
+use image::{
+    io::Reader as ImageReader, ColorType, DynamicImage, GenericImage, GenericImageView, Pixel, Rgb,
+};
 use lab::Lab;
 use palette_extract::{get_palette_with_options, MaxColors, PixelEncoding, PixelFilter, Quality};
 use serde::Serialize;
@@ -90,6 +92,35 @@ impl Canvas {
             palette: Self::get_dmc_palette(&dmc_embroidery_colors),
             config,
         })
+    }
+
+    pub fn get_bytes(self) -> Result<Vec<u8>, CanvasError> {
+        let (width, height) = self.config.img.dimensions();
+        let cell_height = width as f32 / self.config.n_cells_in_width as f32;
+        let mut image = DynamicImage::new(width, height, ColorType::Rgb8);
+
+        for (n_row, row) in self.embroidery.iter().enumerate() {
+            let n_row = n_row as f32;
+            let y_start = (n_row * cell_height).ceil() as u32;
+            let current_row_limit = ((n_row + 1.0 * cell_height).ceil() as u32).min(height);
+
+            for (n_cell, cell) in row.iter().enumerate() {
+                let n_cell = n_cell as f32;
+                let x_start = (n_cell * cell_height).ceil() as u32;
+                let cell_limit = ((n_cell + 1.0 * cell_height).ceil() as u32).min(width);
+
+                for y in y_start..current_row_limit {
+                    for x in x_start..cell_limit {
+                        let color: Rgb<u8> = (*cell).into();
+                        image.put_pixel(x, y, color.to_rgba())
+                    }
+                }
+            }
+        }
+
+        let mut bytes: Vec<u8> = Vec::new();
+        image.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
+        Ok(bytes)
     }
 
     fn get_major_color_in_cell(
