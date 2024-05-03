@@ -1,5 +1,5 @@
 use actix_multipart::Multipart;
-use actix_web::{get, post, HttpResponse};
+use actix_web::{post, HttpResponse};
 use futures_util::StreamExt;
 use std::collections::HashSet;
 
