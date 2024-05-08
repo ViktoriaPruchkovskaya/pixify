@@ -81,13 +81,16 @@ async fn get_data_from_payload(payload: &mut Multipart) -> Result<ImageData, Inv
                 "n_colors" => {
                     let content = get_bytes(field).await?;
                     let value = String::from_utf8(content)?.parse().map_err(|_| {
-                        InvalidPayloadError::InvalidValue("n_colors".into(), "".into())
+                        InvalidPayloadError::InvalidValue(
+                            "n_colors".into(),
+                            "Value should be within 2 and 200".into(),
+                        )
                     })?;
 
                     if value > 200 {
                         return Err(InvalidPayloadError::InvalidValue(
                             "n_colors".into(),
-                            "Value should be bigger than 2 and less than 200".into(),
+                            "Value should be within 2 and 200".into(),
                         ));
                     }
                     data.n_colors = Some(value);

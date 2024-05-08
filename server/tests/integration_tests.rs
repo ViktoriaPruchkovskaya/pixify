@@ -31,26 +31,6 @@ mod tests {
 
         let mut multipart = MultipartBuilder::new();
         multipart.add_file("file", "pic.png", &pic);
-        let (header, payload) = multipart.build();
-        let req = test::TestRequest::post()
-            .uri("/api/upload")
-            .insert_header(header)
-            .set_payload(payload)
-            .to_request();
-        let resp = test::call_service(&app, req).await;
-
-        assert!(resp.status().is_success());
-        let body = test::read_body(resp).await;
-        assert!(!body.is_empty());
-    }
-
-    #[actix_web::test]
-    async fn it_uploads_image_fully_configured() {
-        let app = test::init_service(App::new().configure(routes::services)).await;
-        let pic = include_bytes!("pic.png").to_vec();
-
-        let mut multipart = MultipartBuilder::new();
-        multipart.add_file("file", "pic.png", &pic);
         multipart.add_text("n_colors", 5);
         multipart.add_text("n_cells_in_width", 10);
         let (header, payload) = multipart.build();
@@ -81,11 +61,65 @@ mod tests {
             .set_payload(payload)
             .to_request();
         let resp = test::call_service(&app, req).await;
+
         assert_eq!(resp.status(), 400);
         let body = test::read_body(resp).await;
         assert_eq!(
             body,
             Bytes::from_static(b"\"Missing value. Expected 'file' to be provided\"")
         );
+    }
+
+    #[actix_web::test]
+    async fn it_uploads_image_exceeding_color_limit() {
+        let app = test::init_service(App::new().configure(routes::services)).await;
+        let pic = include_bytes!("pic.png").to_vec();
+
+        let mut multipart = MultipartBuilder::new();
+        multipart.add_file("file", "pic.png", &pic);
+        multipart.add_text("n_colors", 300);
+        let (header, payload) = multipart.build();
+        let req = test::TestRequest::post()
+            .uri("/api/upload")
+            .insert_header(header)
+            .set_payload(payload)
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+
+        assert_eq!(resp.status(), 400);
+        let body = test::read_body(resp).await;
+        assert_eq!(
+            body,
+            Bytes::from_static(
+                b"\"Invalid value in 'n_colors'. Value should be within 2 and 200\""
+            )
+        );
+    }
+
+    #[actix_web::test]
+    async fn it_exports_image() {
+        let app = test::init_service(App::new().configure(routes::services)).await;
+        let pic = include_bytes!("pic.png").to_vec();
+
+        let mut multipart = MultipartBuilder::new();
+        multipart.add_file("file", "pic.png", &pic);
+        multipart.add_text("n_colors", 5);
+        multipart.add_text("n_cells_in_width", 10);
+        let (header, payload) = multipart.build();
+        let req = test::TestRequest::post()
+            .uri("/api/export")
+            .insert_header(header)
+            .set_payload(payload)
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+
+        assert!(resp.status().is_success());
+        assert!(resp.headers().contains_key("content-type"));
+        assert_eq!(resp.headers().get("content-type").unwrap(), "image/png");
+        assert!(resp.headers().contains_key("content-disposition"));
+        assert_eq!(
+            resp.headers().get("content-disposition").unwrap(),
+            "attachment; filename=pic.png"
+        )
     }
 }

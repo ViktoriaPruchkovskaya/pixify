@@ -45,7 +45,7 @@ impl ResponseError for ExportError {
 pub enum InvalidPayloadError {
     #[error("Missing value. Expected '{0}' to be provided")]
     MissingValue(String),
-    #[error("Invalid value in '{0}'.{1}")]
+    #[error("Invalid value in '{0}'. {1}")]
     InvalidValue(String, String),
     #[error("Cannot extract a file from form")]
     Form(
