@@ -2,13 +2,13 @@ use image::{
     io::Reader as ImageReader, ColorType, DynamicImage, GenericImage, GenericImageView, Pixel, Rgb,
 };
 use lab::Lab;
-use palette_extract::{get_palette_with_options, MaxColors, PixelEncoding, PixelFilter, Quality};
 use serde::Serialize;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::io::Cursor;
 
 use crate::embroidery::colors::{DmcColor, RgbColor};
+use crate::embroidery::image::ImagePalette;
 use crate::error::CanvasError;
 
 pub struct CanvasConfig {
@@ -57,9 +57,7 @@ impl Canvas {
         let (width, height) = config.img.dimensions();
         let cell_height = width as f32 / n_cells_in_width as f32;
         let rows = (height as f32 / cell_height).round() as u32;
-
-        let embroidery_colors = Self::get_rgb_palette(&config.img, config.n_colors);
-        let dmc_embroidery_colors = Self::convert_rgb_to_dmc(&embroidery_colors);
+        let embroidery_colors = config.img.get_dmc_palette(config.n_colors)?;
 
         let mut canvas: Vec<Vec<RgbColor>> = Vec::with_capacity(rows as usize);
         for y in 0..rows {
@@ -74,7 +72,7 @@ impl Canvas {
                 let major_color =
                     Self::get_major_color_in_cell(&config.img, x_start, x_end, y_start, y_end);
                 let major_color_lab = Lab::from_rgb(&major_color.into());
-                let closest_color = dmc_embroidery_colors
+                let closest_color = embroidery_colors
                     .iter()
                     .min_by_key(|&color| {
                         let dmc_color_lab = Lab::from_rgb(&color.rgb.into());
@@ -89,7 +87,7 @@ impl Canvas {
 
         Ok(Canvas {
             embroidery: canvas,
-            palette: Self::get_dmc_palette(&dmc_embroidery_colors),
+            palette: Self::get_dmc_palette(&embroidery_colors),
             config,
         })
     }
@@ -150,35 +148,6 @@ impl Canvas {
             lab_1.b.partial_cmp(&lab_2.b).unwrap_or(Ordering::Equal)
         });
         sorted_entries[0].0.into()
-    }
-
-    fn get_rgb_palette(img: &DynamicImage, n_colors: u8) -> Vec<RgbColor> {
-        let pixels = img.to_rgb8(); //interestingly it generates 1 color less if n_colors >=7
-        let mut colors = get_palette_with_options(
-            &pixels,
-            PixelEncoding::Rgb,
-            Quality::new(10),
-            MaxColors::new(n_colors),
-            PixelFilter::None,
-        );
-
-        colors
-            .iter_mut()
-            .map(|val| RgbColor {
-                red: val.r,
-                green: val.g,
-                blue: val.b,
-            })
-            .collect()
-    }
-
-    fn convert_rgb_to_dmc(colors: &Vec<RgbColor>) -> Vec<DmcColor> {
-        let mut dmc_colors: Vec<DmcColor> = Vec::with_capacity(colors.len());
-        for color in colors {
-            let dmc_color = color.find_dmc();
-            dmc_colors.push(dmc_color);
-        }
-        dmc_colors
     }
 
     fn get_dmc_palette(colors: &Vec<DmcColor>) -> Vec<Palette> {
