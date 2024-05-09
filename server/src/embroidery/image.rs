@@ -16,6 +16,8 @@ impl ImagePalette for DynamicImage {
                 "Number of colors should be bigger than 2",
             ));
         }
+        // palette_extract library gives wrong number of colors depending on input
+        // to fix this, modification done below
         let mut n_colors: u8 = n_colors;
         if n_colors > 7 {
             n_colors += 1;
@@ -23,7 +25,7 @@ impl ImagePalette for DynamicImage {
             n_colors -= 1
         }
 
-        let pixels = self.to_rgb8(); //interestingly it generates 1 color less if n_colors >=7
+        let pixels = self.to_rgb8();
         let mut colors = get_palette_with_options(
             &pixels,
             PixelEncoding::Rgb,
@@ -86,5 +88,15 @@ mod test {
         let err = image.get_rgb_palette(2).unwrap_err();
         assert_eq!(err.to_string(), "Number of colors should be bigger than 2");
         assert_eq!(err.kind(), ErrorKind::InvalidInput);
+    }
+
+    #[test]
+    fn it_gets_dmc_palette() {
+        let image = generate_image();
+        let colors = image.get_dmc_palette(3).unwrap();
+        assert_eq!(colors.len(), 3);
+        assert_eq!(colors[0].name, "B5200");
+        assert_eq!(colors[1].name, "310");
+        assert_eq!(colors[2].name, "13");
     }
 }

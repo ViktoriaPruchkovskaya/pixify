@@ -87,7 +87,7 @@ async fn get_data_from_payload(payload: &mut Multipart) -> Result<ImageData, Inv
                         )
                     })?;
 
-                    if value > 200 {
+                    if value <= 2 || value > 200 {
                         return Err(InvalidPayloadError::InvalidValue(
                             "n_colors".into(),
                             "Value should be within 2 and 200".into(),
