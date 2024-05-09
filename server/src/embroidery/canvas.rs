@@ -3,8 +3,6 @@ use image::{
 };
 use lab::Lab;
 use serde::Serialize;
-use std::cmp::Ordering;
-use std::collections::HashMap;
 use std::io::Cursor;
 
 use crate::embroidery::colors::{DmcColor, RgbColor};
@@ -69,8 +67,9 @@ impl Canvas {
                 let x_start = (x as f32 * cell_height).round() as u32;
                 let x_end = (x_start + cell_height as u32).min(width);
 
-                let major_color =
-                    Self::get_major_color_in_cell(&config.img, x_start, x_end, y_start, y_end);
+                let major_color = config
+                    .img
+                    .get_major_color_in_cell(x_start, x_end, y_start, y_end);
                 let major_color_lab = Lab::from_rgb(&major_color.into());
                 let closest_color = embroidery_colors
                     .iter()
@@ -87,7 +86,7 @@ impl Canvas {
 
         Ok(Canvas {
             embroidery: canvas,
-            palette: Self::get_dmc_palette(&embroidery_colors),
+            palette: get_dmc_palette(&embroidery_colors),
             config,
         })
     }
