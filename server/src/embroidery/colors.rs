@@ -3,7 +3,7 @@ use lab::Lab;
 use serde::{ser::SerializeSeq, Serialize, Serializer};
 use std::f32::consts::PI;
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub struct RgbColor {
     pub red: u8,
     pub green: u8,
