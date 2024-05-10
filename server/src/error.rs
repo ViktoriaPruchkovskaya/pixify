@@ -1,4 +1,3 @@
-use crate::error::UploadError::InvalidPayload;
 use actix_multipart::MultipartError;
 use actix_web::{HttpResponse, ResponseError};
 use std::string::FromUtf8Error;
@@ -16,7 +15,7 @@ pub enum UploadError {
 impl ResponseError for UploadError {
     fn error_response(&self) -> HttpResponse {
         match self {
-            InvalidPayload(err) => err.error_response(),
+            UploadError::InvalidPayload(err) => err.error_response(),
             s => HttpResponse::InternalServerError().json(s.to_string()),
         }
     }
