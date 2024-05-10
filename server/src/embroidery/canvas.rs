@@ -2,15 +2,14 @@ use image::{
     io::Reader as ImageReader, ColorType, DynamicImage, GenericImage, GenericImageView, Pixel, Rgb,
 };
 use lab::Lab;
-use palette_extract::{get_palette_with_options, MaxColors, PixelEncoding, PixelFilter, Quality};
 use serde::Serialize;
-use std::cmp::Ordering;
-use std::collections::HashMap;
 use std::io::Cursor;
 
 use crate::embroidery::colors::{DmcColor, RgbColor};
+use crate::embroidery::image::ImagePalette;
 use crate::error::CanvasError;
 
+#[derive(Debug)]
 pub struct CanvasConfig {
     pub img: DynamicImage,
     pub n_cells_in_width: u8,
@@ -23,7 +22,7 @@ impl CanvasConfig {
         n_cells_in_width: Option<u8>,
         n_colors: Option<u8>,
     ) -> Result<Self, CanvasError> {
-        let img: DynamicImage = ImageReader::new(Cursor::new(bytes))
+        let img = ImageReader::new(Cursor::new(bytes))
             .with_guessed_format()
             .map_err(CanvasError::ImageFormat)?
             .decode()?;
@@ -57,9 +56,7 @@ impl Canvas {
         let (width, height) = config.img.dimensions();
         let cell_height = width as f32 / n_cells_in_width as f32;
         let rows = (height as f32 / cell_height).round() as u32;
-
-        let embroidery_colors = Self::get_rgb_palette(&config.img, config.n_colors);
-        let dmc_embroidery_colors = Self::convert_rgb_to_dmc(&embroidery_colors);
+        let embroidery_colors = config.img.get_dmc_palette(config.n_colors)?;
 
         let mut canvas: Vec<Vec<RgbColor>> = Vec::with_capacity(rows as usize);
         for y in 0..rows {
@@ -71,10 +68,11 @@ impl Canvas {
                 let x_start = (x as f32 * cell_height).round() as u32;
                 let x_end = (x_start + cell_height as u32).min(width);
 
-                let major_color =
-                    Self::get_major_color_in_cell(&config.img, x_start, x_end, y_start, y_end);
+                let major_color = config
+                    .img
+                    .get_major_color_in_cell(x_start, x_end, y_start, y_end);
                 let major_color_lab = Lab::from_rgb(&major_color.into());
-                let closest_color = dmc_embroidery_colors
+                let closest_color = embroidery_colors
                     .iter()
                     .min_by_key(|&color| {
                         let dmc_color_lab = Lab::from_rgb(&color.rgb.into());
@@ -89,7 +87,7 @@ impl Canvas {
 
         Ok(Canvas {
             embroidery: canvas,
-            palette: Self::get_dmc_palette(&dmc_embroidery_colors),
+            palette: get_dmc_palette(&embroidery_colors),
             config,
         })
     }
@@ -122,73 +120,81 @@ impl Canvas {
         image.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
         Ok(bytes)
     }
+}
 
-    fn get_major_color_in_cell(
-        image: &DynamicImage,
-        x_start: u32,
-        x_end: u32,
-        y_start: u32,
-        y_end: u32,
-    ) -> RgbColor {
-        let mut colors_count: HashMap<Rgb<u8>, u32> = HashMap::new();
-        for y in y_start..y_end {
-            for x in x_start..x_end {
-                let color = image.get_pixel(x, y).to_rgb();
-                colors_count
-                    .entry(color)
-                    .and_modify(|count| *count += 1)
-                    .or_insert(1);
-            }
-        }
-        let mut sorted_entries: Vec<(Rgb<u8>, u32)> = colors_count.into_iter().collect();
-        sorted_entries.sort_by(|&(color, count), &(color_2, count_2)| {
-            if count != count_2 {
-                return count_2.cmp(&count);
-            }
-            let lab_1 = Lab::from_rgb(&color.0);
-            let lab_2 = Lab::from_rgb(&color_2.0);
-            lab_1.b.partial_cmp(&lab_2.b).unwrap_or(Ordering::Equal)
+fn get_dmc_palette(colors: &[DmcColor]) -> Vec<Palette> {
+    let mut palette: Vec<Palette> = Vec::with_capacity(colors.len());
+    for (order, &color) in colors.iter().enumerate() {
+        palette.push(Palette {
+            symbol: order,
+            color,
         });
-        sorted_entries[0].0.into()
     }
+    palette
+}
 
-    fn get_rgb_palette(img: &DynamicImage, n_colors: u8) -> Vec<RgbColor> {
-        let pixels = img.to_rgb8(); //interestingly it generates 1 color less if n_colors >=7
-        let mut colors = get_palette_with_options(
-            &pixels,
-            PixelEncoding::Rgb,
-            Quality::new(10),
-            MaxColors::new(n_colors),
-            PixelFilter::None,
-        );
+#[cfg(test)]
+mod test {
+    use super::*;
+    use image::ImageBuffer;
 
-        colors
-            .iter_mut()
-            .map(|val| RgbColor {
-                red: val.r,
-                green: val.g,
-                blue: val.b,
-            })
-            .collect()
-    }
-
-    fn convert_rgb_to_dmc(colors: &Vec<RgbColor>) -> Vec<DmcColor> {
-        let mut dmc_colors: Vec<DmcColor> = Vec::with_capacity(colors.len());
-        for color in colors {
-            let dmc_color = color.find_dmc();
-            dmc_colors.push(dmc_color);
-        }
-        dmc_colors
-    }
-
-    fn get_dmc_palette(colors: &Vec<DmcColor>) -> Vec<Palette> {
-        let mut palette: Vec<Palette> = Vec::with_capacity(colors.len());
-        for (order, &color) in colors.iter().enumerate() {
-            palette.push(Palette {
-                symbol: order,
-                color,
+    fn generate_image_bytes(width: Option<u32>, height: Option<u32>) -> Vec<u8> {
+        let image_buffer =
+            ImageBuffer::from_fn(width.unwrap_or(50), height.unwrap_or(50), |x, y| {
+                let r = ((x % 256) + 20) as u8;
+                let g = ((y % 256) + 30) as u8;
+                let b = ((x + y) % 256) as u8;
+                Rgb([r, g, b])
             });
-        }
-        palette
+        let dynamic_image = DynamicImage::ImageRgb8(image_buffer);
+
+        let mut bytes = Vec::new();
+        dynamic_image
+            .write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)
+            .unwrap();
+
+        bytes
+    }
+
+    #[test]
+    fn it_creates_config_invalid_format() {
+        let bytes = vec![123, 200, 1];
+        let n_cells_in_width: u8 = 10;
+        let n_colors: u8 = 5;
+
+        let err = CanvasConfig::new(bytes, Some(n_cells_in_width), Some(n_colors)).unwrap_err();
+        assert_eq!(err.to_string(), "The image format could not be determined");
+    }
+
+    #[test]
+    fn it_gets_canvas() {
+        let bytes = generate_image_bytes(None, None);
+        let n_cells_in_width: u8 = 10;
+        let n_colors: u8 = 5;
+
+        let config = CanvasConfig::new(bytes, Some(n_cells_in_width), Some(n_colors)).unwrap();
+        let canvas = Canvas::new(config).unwrap();
+
+        assert_eq!(canvas.embroidery[0].len(), n_cells_in_width as usize);
+        assert_eq!(canvas.palette.len(), n_colors as usize);
+    }
+
+    #[test]
+    fn it_gets_canvas_bytes() {
+        let bytes = generate_image_bytes(Some(10), Some(10));
+        let n_cells_in_width: u8 = 10;
+        let n_colors: u8 = 5;
+
+        let config = CanvasConfig::new(bytes, Some(n_cells_in_width), Some(n_colors)).unwrap();
+        let canvas_bytes = Canvas::new(config).unwrap().get_bytes().unwrap();
+
+        let canvas = ImageReader::new(Cursor::new(canvas_bytes))
+            .with_guessed_format()
+            .unwrap()
+            .decode()
+            .unwrap();
+        let (width, height) = canvas.dimensions();
+        assert_eq!(width, 10);
+        assert_eq!(height, 10);
     }
 }
