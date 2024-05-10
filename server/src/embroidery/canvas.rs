@@ -100,12 +100,12 @@ impl Canvas {
         for (n_row, row) in self.embroidery.iter().enumerate() {
             let n_row = n_row as f32;
             let y_start = (n_row * cell_height).ceil() as u32;
-            let current_row_limit = ((n_row + 1.0 * cell_height).ceil() as u32).min(height);
+            let current_row_limit = (((n_row + 1.0) * cell_height).ceil() as u32).min(height);
 
             for (n_cell, cell) in row.iter().enumerate() {
                 let n_cell = n_cell as f32;
                 let x_start = (n_cell * cell_height).ceil() as u32;
-                let cell_limit = ((n_cell + 1.0 * cell_height).ceil() as u32).min(width);
+                let cell_limit = (((n_cell + 1.0) * cell_height).ceil() as u32).min(width);
 
                 for y in y_start..current_row_limit {
                     for x in x_start..cell_limit {
