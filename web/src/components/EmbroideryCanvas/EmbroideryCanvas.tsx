@@ -6,5 +6,9 @@ export default function EmbroideryCanvas({canvas}: { canvas: Canvas }) {
     canvas.palette.forEach(({identifier, color}) => palette.set(color.rgb.toString(), identifier));
 
     return (
-        <table>{canvas.embroidery.map((row, i) => <EmbroideryRow key={i} row={row} palette={palette}/>)}</table>);
+        <div style={{marginTop: "5px", overflow: "auto", width: "800px", height: "700px", border: "1px solid black"}}>
+            <table
+                style={{margin: "5px", borderCollapse: "collapse"}}>{canvas.embroidery.map((row, i) =>
+                <EmbroideryRow key={i} row={row} palette={palette}/>)}</table>
+        </div>);
 }
