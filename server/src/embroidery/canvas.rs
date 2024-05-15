@@ -3,7 +3,8 @@ use image::{
 };
 use lab::Lab;
 use serde::Serialize;
-use std::io::Cursor;
+use std::cmp::Ordering;
+use std::{collections::HashMap, io::Cursor};
 
 use crate::embroidery::colors::{DmcColor, RgbColor};
 use crate::embroidery::image::ImagePalette;
@@ -46,8 +47,9 @@ pub struct Canvas {
 
 #[derive(Serialize)]
 pub struct Palette {
-    symbol: usize,
+    identifier: String,
     color: DmcColor,
+    thread_length: u32,
 }
 
 impl Canvas {
@@ -85,9 +87,11 @@ impl Canvas {
             canvas.push(row)
         }
 
+        let palette = get_dmc_palette(&canvas, &embroidery_colors);
+
         Ok(Canvas {
             embroidery: canvas,
-            palette: get_dmc_palette(&embroidery_colors),
+            palette,
             config,
         })
     }
@@ -122,15 +126,44 @@ impl Canvas {
     }
 }
 
-fn get_dmc_palette(colors: &[DmcColor]) -> Vec<Palette> {
+fn get_dmc_palette(canvas: &Vec<Vec<RgbColor>>, colors: &Vec<DmcColor>) -> Vec<Palette> {
     let mut palette: Vec<Palette> = Vec::with_capacity(colors.len());
-    for (order, &color) in colors.iter().enumerate() {
-        palette.push(Palette {
-            symbol: order,
-            color,
-        });
+    let threads: HashMap<RgbColor, u32> = calculate_threads(canvas, colors);
+    let mut colors = colors.clone();
+    colors.sort_by(|color_1, color_2| {
+        let lab_1 = Lab::from_rgb(&color_1.rgb.into());
+        let lab_2 = Lab::from_rgb(&color_2.rgb.into());
+
+        (lab_1.l, lab_1.a, lab_1.b)
+            .partial_cmp(&(lab_2.l, lab_2.a, lab_2.b))
+            .unwrap_or(Ordering::Equal)
+    });
+
+    let mut identifier: u8 = 1;
+    for &color in colors.iter() {
+        if let Some(thread) = threads.get(&color.rgb) {
+            palette.push(Palette {
+                identifier: format!("{:02}", identifier),
+                color,
+                thread_length: *thread,
+            });
+            identifier += 1;
+        }
     }
     palette
+}
+
+fn calculate_threads(canvas: &Vec<Vec<RgbColor>>, colors: &[DmcColor]) -> HashMap<RgbColor, u32> {
+    let mut threads: HashMap<RgbColor, u32> = HashMap::with_capacity(colors.len());
+    for row in canvas {
+        for &color in row {
+            threads
+                .entry(color)
+                .and_modify(|count| *count += 1)
+                .or_insert(10);
+        }
+    }
+    threads
 }
 
 #[cfg(test)]

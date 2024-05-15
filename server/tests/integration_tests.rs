@@ -7,9 +7,11 @@ struct CanvasResponse {
 #[derive(serde::Deserialize)]
 #[allow(unused)]
 struct Palette {
-    pub symbol: usize,
+    pub identifier: String,
     pub color: Color,
+    pub thread_length: usize,
 }
+
 #[derive(serde::Deserialize)]
 #[allow(unused)]
 struct Color {

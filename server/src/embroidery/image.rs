@@ -2,7 +2,10 @@ use image::{DynamicImage, GenericImageView, Pixel, Rgb};
 use lab::Lab;
 use palette_extract::{get_palette_with_options, MaxColors, PixelEncoding, PixelFilter, Quality};
 use std::io::{Error, ErrorKind};
-use std::{cmp::Ordering, collections::HashMap};
+use std::{
+    cmp::Ordering,
+    collections::{HashMap, HashSet},
+};
 
 use crate::embroidery::colors::{DmcColor, RgbColor};
 
@@ -90,12 +93,13 @@ impl ImagePalette for DynamicImage {
 }
 
 fn convert_rgb_to_dmc(colors: &Vec<RgbColor>) -> Vec<DmcColor> {
-    let mut dmc_colors: Vec<DmcColor> = Vec::with_capacity(colors.len());
+    let mut dmc_colors: HashSet<DmcColor> = HashSet::new();
     for color in colors {
         let dmc_color = color.find_dmc();
-        dmc_colors.push(dmc_color);
+        dmc_colors.insert(dmc_color);
     }
-    dmc_colors
+
+    dmc_colors.into_iter().collect()
 }
 
 #[cfg(test)]
@@ -132,11 +136,19 @@ mod test {
     #[test]
     fn it_gets_dmc_palette() {
         let image = generate_image();
-        let colors = image.get_dmc_palette(3).unwrap();
+        let mut colors = image.get_dmc_palette(3).unwrap();
+        colors.sort_by(|color_1, color_2| {
+            let lab_1 = Lab::from_rgb(&color_1.rgb.into());
+            let lab_2 = Lab::from_rgb(&color_2.rgb.into());
+
+            (lab_1.l, lab_1.a, lab_1.b)
+                .partial_cmp(&(lab_2.l, lab_2.a, lab_2.b))
+                .unwrap_or(Ordering::Equal)
+        });
         assert_eq!(colors.len(), 3);
-        assert_eq!(colors[0].name, "B5200");
-        assert_eq!(colors[1].name, "310");
-        assert_eq!(colors[2].name, "13");
+        assert_eq!(colors[0].name, "310");
+        assert_eq!(colors[1].name, "13");
+        assert_eq!(colors[2].name, "B5200");
     }
 
     #[test]
