@@ -3,7 +3,7 @@ use lab::Lab;
 use serde::{ser::SerializeSeq, Serialize, Serializer};
 use std::f32::consts::PI;
 
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub struct RgbColor {
     pub red: u8,
     pub green: u8,
@@ -45,7 +45,7 @@ impl From<RgbColor> for [u8; 3] {
     }
 }
 
-#[derive(Clone, Copy, Serialize)]
+#[derive(Clone, Copy, Serialize, PartialEq, Debug, Eq, Hash)]
 pub struct DmcColor {
     pub name: &'static str,
     pub rgb: RgbColor,
