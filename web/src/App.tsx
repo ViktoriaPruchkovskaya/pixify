@@ -10,9 +10,10 @@ export default function App() {
     });
     const displayCanvas = () => {
         if (canvas?.embroidery.length) {
-            return <EmbroideryCanvas canvas={canvas}/>
+            return <EmbroideryCanvas canvas={canvas} onCanvasChange={setCanvas}/>
         }
     }
+
     return (
         <div>
             <ImageForm onCanvasReceived={setCanvas}/>
