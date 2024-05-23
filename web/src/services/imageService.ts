@@ -1,6 +1,11 @@
 export interface Canvas {
     embroidery: number[][][],
-    palette: { identifier: string, color: { rgb: number[], name: string, thread_length: number } }[]
+    palette: PaletteColor[]
+}
+
+export interface PaletteColor {
+    identifier: string,
+    color: { rgb: number[], name: string, thread_length: number }
 }
 
 export class ImageService {

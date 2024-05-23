@@ -1,27 +1,34 @@
 import {useState} from "react";
-import ColorSelector from "./ColorSelector";
 
 interface EmbroideryCell {
-    color: number[],
-    identifier: string,
-    updateCanvas: (color: number[]) => void
+    color: number[];
+    identifier: string;
+    updateCanvas: (color: number[]) => void;
+    changeCanvasUpdater: (cb: (color: number[]) => void) => void;
+    showMenu: (xPos: number, yPos: number) => void;
 }
 
-export default function EmbroideryCell({color, identifier, updateCanvas}: EmbroideryCell) {
-    let [isFocused, setIsFocused] = useState(false);
-    let [isSelected, setIsSelected] = useState(false);
-
+export default function EmbroideryCell(
+    {
+        color,
+        identifier,
+        updateCanvas,
+        changeCanvasUpdater,
+        showMenu
+    }: EmbroideryCell) {
+    const [isFocused, setIsFocused] = useState(false);
     const handleOnFocus = () => {
         setIsFocused(true)
     }
 
     const handleOnLeave = () => {
-        setIsSelected(false)
         setIsFocused(false)
     }
 
-    const handleOnClick = () => {
-        setIsSelected(true)
+    const handleOnClick = (event: React.MouseEvent<HTMLTableCellElement>) => {
+        const targetPosition = event.currentTarget.getBoundingClientRect();
+        showMenu(targetPosition.x + 35, targetPosition.y + 5);
+        changeCanvasUpdater(() => updateCanvas)
     }
 
     return <td style={{
@@ -34,7 +41,6 @@ export default function EmbroideryCell({color, identifier, updateCanvas}: Embroi
         minHeight: "25px",
         transform: isFocused ? "scale(1.5,1.4)" : undefined,
         cursor: "pointer"
-    }} onMouseOver={handleOnFocus} onMouseLeave={handleOnLeave} onClick={handleOnClick}>{identifier} {isSelected &&
-        <ColorSelector updateCanvas={updateCanvas}/>}
+    }} onMouseOver={handleOnFocus} onMouseLeave={handleOnLeave} onClick={handleOnClick}>{identifier}
     </td>
 }
