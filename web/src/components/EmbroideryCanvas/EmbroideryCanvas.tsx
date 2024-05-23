@@ -8,6 +8,8 @@ interface EmbroideryCanvasProps {
     changeCanvasUpdater: (cb: (color: number[]) => void) => void;
     showMenu: (xPos: number, yPos: number) => void;
     style?: CSSProperties;
+    setSelectedCellPosition: (row: number) => (column: number) => () => void;
+    selectedCellPosition?: { row: number, column: number }
 }
 
 export default function EmbroideryCanvas(
@@ -16,7 +18,9 @@ export default function EmbroideryCanvas(
         onCanvasChange,
         changeCanvasUpdater,
         showMenu,
-        style
+        style,
+        setSelectedCellPosition,
+        selectedCellPosition
     }: EmbroideryCanvasProps) {
     const getPalette = () => {
         const palette: Map<string, string> = new Map();
@@ -56,7 +60,8 @@ export default function EmbroideryCanvas(
                     <EmbroideryRow key={i} row={row}
                                    palette={getPalette()} updateCanvas={updateCanvas(i)}
                                    changeCanvasUpdater={changeCanvasUpdater}
-                                   showMenu={showMenu}/>)}
+                                   showMenu={showMenu} setSelectedCellPosition={setSelectedCellPosition(i)}
+                                   selectedCellPosition={selectedCellPosition?.row === i ? selectedCellPosition : undefined}/>)}
                 </tbody>
             </table>
         </div>);

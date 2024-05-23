@@ -4,6 +4,7 @@ import EmbroideryCanvas from "./components/EmbroideryCanvas/EmbroideryCanvas";
 import {Canvas} from "./services/imageService";
 import ColorSelector from "./components/ColorSelector/ColorSelector";
 import {useColorContextMenu} from "./hooks/useColorContextMenu";
+import {useSelectedCell} from "./hooks/useSelectedCell";
 
 export default function App() {
     const [canvas, setCanvas] = useState<Canvas>({
@@ -20,6 +21,7 @@ export default function App() {
         selectorStyle
     } = useColorContextMenu();
 
+    const {setSelectedCellPosition, resetCellPosition, selectedCellPosition} = useSelectedCell();
 
     return (
         <div>
@@ -31,6 +33,7 @@ export default function App() {
                 top: 0, left: 0,
             }} onClick={() => {
                 hideMenu();
+                resetCellPosition();
             }}/>}
             <ColorSelector dynamicStyles={selectorStyle} palette={canvas.palette} updateCanvas={canvasUpdater}/>
             <ImageForm onCanvasReceived={setCanvas}/>
@@ -38,6 +41,8 @@ export default function App() {
                                                            canvas={canvas} onCanvasChange={setCanvas}
                                                            changeCanvasUpdater={setCanvasUpdater}
                                                            showMenu={showMenu}
+                                                           setSelectedCellPosition={setSelectedCellPosition}
+                                                           selectedCellPosition={selectedCellPosition}
             /> : undefined}
         </div>
     );

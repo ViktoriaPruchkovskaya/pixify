@@ -6,6 +6,8 @@ interface EmbroideryCell {
     updateCanvas: (color: number[]) => void;
     changeCanvasUpdater: (cb: (color: number[]) => void) => void;
     showMenu: (xPos: number, yPos: number) => void;
+    setSelectedCellPosition: () => void;
+    isSelected?: boolean;
 }
 
 export default function EmbroideryCell(
@@ -14,7 +16,9 @@ export default function EmbroideryCell(
         identifier,
         updateCanvas,
         changeCanvasUpdater,
-        showMenu
+        showMenu,
+        setSelectedCellPosition,
+        isSelected
     }: EmbroideryCell) {
     const [isFocused, setIsFocused] = useState(false);
     const handleOnFocus = () => {
@@ -28,6 +32,7 @@ export default function EmbroideryCell(
     const handleOnClick = (event: React.MouseEvent<HTMLTableCellElement>) => {
         const targetPosition = event.currentTarget.getBoundingClientRect();
         showMenu(targetPosition.x + 35, targetPosition.y + 5);
+        setSelectedCellPosition();
         changeCanvasUpdater(() => updateCanvas)
     }
 
@@ -39,7 +44,7 @@ export default function EmbroideryCell(
         textAlign: "center",
         minWidth: "25px",
         minHeight: "25px",
-        transform: isFocused ? "scale(1.5,1.4)" : undefined,
+        transform: isFocused || isSelected ? "scale(1.5,1.4)" : undefined,
         cursor: "pointer"
     }} onMouseOver={handleOnFocus} onMouseLeave={handleOnLeave} onClick={handleOnClick}>{identifier}
     </td>
