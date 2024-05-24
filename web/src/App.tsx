@@ -53,7 +53,7 @@ export default function App() {
                                       showMenu={showMenu}
                                       setSelectedCellPosition={setSelectedCellPosition}
                                       selectedCellPosition={selectedCellPosition}/>
-                    <ThreadPalette palette={canvas.palette}/></div>
+                    <ThreadsPalette palette={canvas.palette}/></div>
             ) : undefined}
         </div>
     );
