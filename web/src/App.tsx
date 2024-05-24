@@ -5,11 +5,12 @@ import {Canvas} from "./services/imageService";
 import ColorSelector from "./components/ColorSelector/ColorSelector";
 import {useColorContextMenu} from "./hooks/useColorContextMenu";
 import {useSelectedCell} from "./hooks/useSelectedCell";
+import ThreadsPalette from "./components/ThreadsPalette/ThreadsPalette";
 
 export default function App() {
     const [canvas, setCanvas] = useState<Canvas>({
         embroidery: [],
-        palette: [{color: {name: "", rgb: [], thread_length: 0}, identifier: "00"}]
+        palette: [{identifier: "00", color: {name: "", rgb: []}, thread_length: 0}]
     });
 
     const {
@@ -37,13 +38,23 @@ export default function App() {
             }}/>}
             <ColorSelector dynamicStyles={selectorStyle} palette={canvas.palette} updateCanvas={canvasUpdater}/>
             <ImageForm onCanvasReceived={setCanvas}/>
-            {canvas?.embroidery.length ? <EmbroideryCanvas style={isMenuShowed ? {pointerEvents: 'none'} : {}}
-                                                           canvas={canvas} onCanvasChange={setCanvas}
-                                                           changeCanvasUpdater={setCanvasUpdater}
-                                                           showMenu={showMenu}
-                                                           setSelectedCellPosition={setSelectedCellPosition}
-                                                           selectedCellPosition={selectedCellPosition}
-            /> : undefined}
+            {canvas?.embroidery.length ? (
+                <div style={{
+                    marginTop: "10px",
+                    display: "inline-grid",
+                    gap: "35px",
+                    gridTemplateColumns: "800px 350px",
+                    paddingLeft: "20px",
+                    paddingRight: "20px"
+                }}>
+                    <EmbroideryCanvas style={isMenuShowed ? {pointerEvents: 'none'} : {}}
+                                      canvas={canvas} onCanvasChange={setCanvas}
+                                      changeCanvasUpdater={setCanvasUpdater}
+                                      showMenu={showMenu}
+                                      setSelectedCellPosition={setSelectedCellPosition}
+                                      selectedCellPosition={selectedCellPosition}/>
+                    <ThreadPalette palette={canvas.palette}/></div>
+            ) : undefined}
         </div>
     );
 }

@@ -41,11 +41,9 @@ export default function EmbroideryCanvas(
 
     return (
         <div style={{
-            marginTop: "5px",
             overflow: "auto",
-            width: "800px",
             height: "700px",
-            border: "1px solid black",
+            boxShadow: "0 2px 9px rgba(0, 0, 0, 0.3)",
             position: "relative",
             ...style
         }}>
