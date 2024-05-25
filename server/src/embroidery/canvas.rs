@@ -49,7 +49,7 @@ pub struct Canvas {
 pub struct Palette {
     identifier: String,
     color: DmcColor,
-    thread_length: u32,
+    n_stitches: u32,
 }
 
 impl Canvas {
@@ -128,7 +128,7 @@ impl Canvas {
 
 fn get_dmc_palette(canvas: &Vec<Vec<RgbColor>>, colors: &Vec<DmcColor>) -> Vec<Palette> {
     let mut palette: Vec<Palette> = Vec::with_capacity(colors.len());
-    let threads: HashMap<RgbColor, u32> = calculate_threads(canvas, colors);
+    let threads: HashMap<RgbColor, u32> = calculate_stitches(canvas, colors);
     let mut colors = colors.clone();
     colors.sort_by(|color_1, color_2| {
         let lab_1 = Lab::from_rgb(&color_1.rgb.into());
@@ -145,7 +145,7 @@ fn get_dmc_palette(canvas: &Vec<Vec<RgbColor>>, colors: &Vec<DmcColor>) -> Vec<P
             palette.push(Palette {
                 identifier: format!("{:02}", identifier),
                 color,
-                thread_length: *thread,
+                n_stitches: *thread,
             });
             identifier += 1;
         }
@@ -153,17 +153,17 @@ fn get_dmc_palette(canvas: &Vec<Vec<RgbColor>>, colors: &Vec<DmcColor>) -> Vec<P
     palette
 }
 
-fn calculate_threads(canvas: &Vec<Vec<RgbColor>>, colors: &[DmcColor]) -> HashMap<RgbColor, u32> {
-    let mut threads: HashMap<RgbColor, u32> = HashMap::with_capacity(colors.len());
+fn calculate_stitches(canvas: &Vec<Vec<RgbColor>>, colors: &[DmcColor]) -> HashMap<RgbColor, u32> {
+    let mut stitches: HashMap<RgbColor, u32> = HashMap::with_capacity(colors.len());
     for row in canvas {
         for &color in row {
-            threads
+            stitches
                 .entry(color)
                 .and_modify(|count| *count += 1)
-                .or_insert(10);
+                .or_insert(1);
         }
     }
-    threads
+    stitches
 }
 
 #[cfg(test)]

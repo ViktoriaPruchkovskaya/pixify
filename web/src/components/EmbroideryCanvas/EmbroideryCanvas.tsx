@@ -1,6 +1,6 @@
-import EmbroideryRow from "./EmbroideryRow";
-import {Canvas} from "../../services/imageService";
 import {CSSProperties} from "react";
+import EmbroideryRow from "./EmbroideryRow";
+import {Canvas, PaletteColor} from "../../services/imageService";
 
 interface EmbroideryCanvasProps {
     canvas: Canvas;
@@ -29,11 +29,27 @@ export default function EmbroideryCanvas(
     }
 
     const updateCanvas = (rowId: number) => {
-        let newEmbroidery: number[][][] = [...canvas.embroidery];
+        const newEmbroidery: number[][][] = [...canvas.embroidery];
+        const newPalette: PaletteColor[] = [...canvas.palette];
+
+        const isEqual = (arr1: number[], arr2: number[]): boolean => arr1.every((el, index) => el === arr2[index]);
+
         return (cellId: number) => {
             return (rgb: number[]) => {
+                const oldColor: number[] = newEmbroidery[rowId][cellId];
                 newEmbroidery[rowId][cellId] = rgb;
+
                 canvas.embroidery = newEmbroidery;
+                canvas.palette = newPalette.reduce((threads: PaletteColor[], thread: PaletteColor) => {
+                    if (isEqual(thread.color.rgb, rgb)) {
+                        thread.n_stitches += 1;
+                    }
+                    if (isEqual(thread.color.rgb, oldColor)) {
+                        thread.n_stitches -= 1;
+                    }
+
+                    return thread.n_stitches > 0 ? [...threads, thread] : threads;
+                }, [])
                 onCanvasChange({...canvas})
             }
         }
@@ -41,11 +57,10 @@ export default function EmbroideryCanvas(
 
     return (
         <div style={{
-            marginTop: "5px",
             overflow: "auto",
-            width: "800px",
+            width: "950px",
             height: "700px",
-            border: "1px solid black",
+            boxShadow: "0 2px 9px rgba(0, 0, 0, 0.3)",
             position: "relative",
             ...style
         }}>
