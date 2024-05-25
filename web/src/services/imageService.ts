@@ -6,7 +6,7 @@ export interface Canvas {
 export interface PaletteColor {
     identifier: string;
     color: { rgb: number[], name: string };
-    thread_length: number;
+    n_stitches: number;
 }
 
 export class ImageService {

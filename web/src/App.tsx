@@ -10,7 +10,7 @@ import ThreadsPalette from "./components/ThreadsPalette/ThreadsPalette";
 export default function App() {
     const [canvas, setCanvas] = useState<Canvas>({
         embroidery: [],
-        palette: [{identifier: "00", color: {name: "", rgb: []}, thread_length: 0}]
+        palette: [{identifier: "00", color: {name: "", rgb: []}, n_stitches: 0}]
     });
 
     const {
@@ -40,10 +40,9 @@ export default function App() {
             <ImageForm onCanvasReceived={setCanvas}/>
             {canvas?.embroidery.length ? (
                 <div style={{
-                    marginTop: "10px",
-                    display: "inline-grid",
-                    gap: "35px",
-                    gridTemplateColumns: "800px 350px",
+                    marginTop: "15px",
+                    display: "flex",
+                    justifyContent: "space-around",
                     paddingLeft: "20px",
                     paddingRight: "20px"
                 }}>

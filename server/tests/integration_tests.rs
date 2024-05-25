@@ -9,7 +9,7 @@ struct CanvasResponse {
 struct Palette {
     pub identifier: String,
     pub color: Color,
-    pub thread_length: usize,
+    pub n_stitches: usize,
 }
 
 #[derive(serde::Deserialize)]
