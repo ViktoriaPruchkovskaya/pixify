@@ -31,7 +31,7 @@ export default function CanvasMenu({onCanvasChange}: CanvasMenuProps) {
             return
         }
         const storageService = await StorageService.getInstance();
-        const {id, ...canvas} = await storageService.getCanvasById(parseInt(chosenOption));
+        const {id, ...canvas} = await storageService.getCanvasByName(chosenOption);
         onCanvasChange(canvas)
 
     }

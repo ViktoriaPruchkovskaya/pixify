@@ -25,6 +25,7 @@ export default function App() {
     } = useColorContextMenu();
 
     const {setSelectedCellPosition, resetCellPosition, selectedCellPosition} = useSelectedCell();
+    const [isSaveMenuShowed, setIsSaveMenuShowed] = useState(false);
 
     return (
         <div>
@@ -33,7 +34,8 @@ export default function App() {
                 position: "fixed",
                 width: "100vw",
                 height: "100vh",
-                top: 0, left: 0,
+                top: 0,
+                left: 0,
             }} onClick={() => {
                 hideMenu();
                 resetCellPosition();
@@ -56,7 +58,8 @@ export default function App() {
                                       setSelectedCellPosition={setSelectedCellPosition}
                                       selectedCellPosition={selectedCellPosition}/>
                     <ThreadsPalette palette={canvas.palette}/>
-                    <SaveButton canvas={canvas}/>
+                    <SaveButton canvas={canvas} isSaveMenuShowed={isSaveMenuShowed}
+                                setIsSaveMenuShowed={setIsSaveMenuShowed}/>
                 </div>
             ) : undefined}
         </div>

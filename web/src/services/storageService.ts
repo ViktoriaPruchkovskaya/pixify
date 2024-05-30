@@ -23,7 +23,7 @@ export class StorageService {
             request.onupgradeneeded = function () {
                 let db = request.result;
                 if (!db.objectStoreNames.contains('canvases')) {
-                    db.createObjectStore('canvases', {keyPath: 'id', autoIncrement: true});
+                    db.createObjectStore('canvases');
                 }
             };
 
@@ -38,9 +38,9 @@ export class StorageService {
         })
     }
 
-    public async setCanvas(canvas: Canvas) {
+    public async setCanvas(canvas: Canvas, name: string) {
         this.assertConnection();
-        await this.wrapTransaction("canvases", "add", canvas);
+        await this.wrapTransaction("canvases", "add", canvas, name);
     }
 
     public async getCanvasNames() {
@@ -48,7 +48,7 @@ export class StorageService {
         return this.wrapTransaction("canvases", "getAllKeys");
     }
 
-    public async getCanvasById(name: number) {
+    public async getCanvasByName(name: string) {
         this.assertConnection();
         return this.wrapTransaction("canvases", "get", name);
     }
@@ -60,14 +60,19 @@ export class StorageService {
     }
 
 
-    private wrapTransaction(collectionName: string, operation: "add", data: any): Promise<any>
+    private wrapTransaction(collectionName: string, operation: "add", data: any, key: IDBValidKey): Promise<any>
     private wrapTransaction(collectionName: string, operation: "get", data: IDBValidKey | IDBKeyRange): Promise<any>
     private wrapTransaction(collectionName: string, operation: "getAllKeys", data?: IDBValidKey | IDBKeyRange): Promise<any>
-    private wrapTransaction(collectionName: string, operation: "add" | "get" | "getAllKeys", data?: any | IDBValidKey | IDBKeyRange): Promise<any> {
+    private wrapTransaction(collectionName: string, operation: "add" | "get" | "getAllKeys", data?: any | IDBValidKey | IDBKeyRange, key?: IDBValidKey): Promise<any> {
         return new Promise((resolve, reject) => {
             const mode = operation === "add" ? "readwrite" : "readonly";
             const transaction: IDBTransaction = this.db.transaction(collectionName, mode);
-            const request = transaction.objectStore(collectionName)[operation](data);
+            let request;
+            if (operation === "add") {
+                request = transaction.objectStore(collectionName).add(data, key);
+            } else {
+                request = transaction.objectStore(collectionName)[operation](data);
+            }
             request.onsuccess = () => {
                 resolve(request.result)
             };

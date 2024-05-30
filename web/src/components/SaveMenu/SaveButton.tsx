@@ -1,18 +1,19 @@
 import {Canvas} from "../../services/imageService";
-import * as React from "react";
-import {StorageService} from "../../services/storageService";
+import SaveMenu from "./SaveMenu";
 
 interface SaveButtonProps {
     canvas: Canvas;
+    setIsSaveMenuShowed: (isShowed: boolean) => void;
+    isSaveMenuShowed: boolean;
 }
 
-export default function SaveButton({canvas}: SaveButtonProps) {
-    const handleOnClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-        event.preventDefault();
-        (async () => {
-            const storageService = await StorageService.getInstance();
-            await storageService.setCanvas(canvas);
-        })()
+export default function SaveButton({canvas, setIsSaveMenuShowed, isSaveMenuShowed}: SaveButtonProps) {
+    const handleOnClick = () => {
+        setIsSaveMenuShowed(true);
     }
-    return (<button onClick={handleOnClick}>SAVE</button>)
+
+    return (<>
+        <button onClick={handleOnClick}>SAVE</button>
+        {isSaveMenuShowed && <SaveMenu canvas={canvas} setIsSaveMenuShowed={setIsSaveMenuShowed}/>}
+    </>)
 }
