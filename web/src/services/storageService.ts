@@ -12,7 +12,7 @@ export class StorageService {
         if (StorageService.instance) {
             return StorageService.instance;
         }
-        let db = await this.open();
+        const db = await this.open();
         return StorageService.instance = new StorageService(db);
     }
 
@@ -38,40 +38,92 @@ export class StorageService {
         })
     }
 
-    public async setCanvas(canvas: Canvas, name: string) {
-        this.assertConnection();
-        await this.wrapTransaction("canvases", "add", canvas, name);
+    public async setCanvas(canvas: Canvas, name: string): Promise<void> {
+        const transaction = this.db.transaction("canvases", "readwrite");
+        const existingCanvas = await this.get({collectionName: "canvases", key: name, transaction});
+        if (existingCanvas) {
+            throw new Error("Canvas with such name already exists");
+        }
+        await this.add({
+            collectionName: "canvases",
+            data: canvas,
+            key: name,
+            transaction
+        });
     }
 
     public async getCanvasNames() {
-        this.assertConnection();
-        return this.wrapTransaction("canvases", "getAllKeys");
+        return this.getAllKeys({collectionName: "canvases"});
     }
 
     public async getCanvasByName(name: string) {
-        this.assertConnection();
-        return this.wrapTransaction("canvases", "get", name);
+        return this.get({collectionName: "canvases", key: name});
     }
 
-    private assertConnection() {
+    private async add(options: {
+        collectionName: string,
+        data: object,
+        key: IDBValidKey,
+        transaction?: IDBTransaction,
+    }) {
+        return await this.wrapTransaction({...options, operation: "add"})
+    }
+
+    private async get(options: {
+        collectionName: string,
+        key: IDBValidKey | IDBKeyRange,
+        transaction?: IDBTransaction,
+    }) {
+        return await this.wrapTransaction({...options, operation: "get"});
+    }
+
+    private async getAllKeys(options: {
+        collectionName: string,
+        transaction?: IDBTransaction,
+    }) {
+        return await this.wrapTransaction({...options, operation: "getAllKeys"})
+    }
+
+
+    private wrapTransaction(args: {
+        collectionName: string,
+        operation: "add",
+        data: object,
+        key: IDBValidKey,
+        transaction?: IDBTransaction,
+    }): Promise<any>
+    private wrapTransaction(args: {
+        collectionName: string,
+        operation: "get",
+        key: IDBValidKey | IDBKeyRange,
+        transaction?: IDBTransaction,
+    }): Promise<any>
+    private wrapTransaction(args: {
+        collectionName: string,
+        operation: "getAllKeys",
+        transaction?: IDBTransaction,
+    }): Promise<any>
+    private wrapTransaction({collectionName, operation, data, key, transaction}: {
+        collectionName: string,
+        transaction?: IDBTransaction,
+        operation: "add" | "get" | "getAllKeys",
+        data?: object,
+        key?: IDBValidKey | IDBKeyRange
+    }): Promise<any> {
         if (!this.db) {
             throw new Error('Database is not opened yet');
         }
-    }
-
-
-    private wrapTransaction(collectionName: string, operation: "add", data: any, key: IDBValidKey): Promise<any>
-    private wrapTransaction(collectionName: string, operation: "get", data: IDBValidKey | IDBKeyRange): Promise<any>
-    private wrapTransaction(collectionName: string, operation: "getAllKeys", data?: IDBValidKey | IDBKeyRange): Promise<any>
-    private wrapTransaction(collectionName: string, operation: "add" | "get" | "getAllKeys", data?: any | IDBValidKey | IDBKeyRange, key?: IDBValidKey): Promise<any> {
         return new Promise((resolve, reject) => {
-            const mode = operation === "add" ? "readwrite" : "readonly";
-            const transaction: IDBTransaction = this.db.transaction(collectionName, mode);
+            if (!transaction) {
+                const mode = operation === "add" ? "readwrite" : "readonly";
+                transaction = this.db.transaction(collectionName, mode);
+            }
+
             let request;
             if (operation === "add") {
-                request = transaction.objectStore(collectionName).add(data, key);
+                request = transaction.objectStore(collectionName).add(data, key as IDBValidKey);
             } else {
-                request = transaction.objectStore(collectionName)[operation](data);
+                request = transaction.objectStore(collectionName)[operation](key as IDBValidKey | IDBKeyRange);
             }
             request.onsuccess = () => {
                 resolve(request.result)

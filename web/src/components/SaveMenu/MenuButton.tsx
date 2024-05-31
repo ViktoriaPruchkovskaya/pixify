@@ -2,7 +2,7 @@ interface FormButtonInterface {
     type: "submit" | "button";
     backgroundColor: string;
     onClick?: () => void;
-    children: string
+    children: string;
 }
 
 export default function MenuButton({type, children, backgroundColor, onClick}: FormButtonInterface) {
