@@ -1,17 +1,18 @@
 import {useEffect, useState} from "react";
 import {StorageService} from "../../services/storageService";
 import {Canvas} from "../../services/imageService";
+import CanvasService from "../../services/canvasService";
 
 interface CanvasMenuProps {
     onCanvasChange: (canvas: Canvas) => void;
 }
 
 export default function CanvasMenu({onCanvasChange}: CanvasMenuProps) {
-    let [canvases, setCanvases] = useState([]);
+    let [canvases, setCanvases] = useState<string[]>([]);
 
     async function getSavedCanvases() {
-        const storageService = await StorageService.getInstance();
-        const canvasNames = await storageService.getCanvasNames()
+        const canvasService = new CanvasService();
+        const canvasNames = await canvasService.getCanvasNames()
         setCanvases(canvasNames)
     }
 
@@ -30,8 +31,8 @@ export default function CanvasMenu({onCanvasChange}: CanvasMenuProps) {
         if (!chosenOption) {
             return
         }
-        const storageService = await StorageService.getInstance();
-        const {id, ...canvas} = await storageService.getCanvasByName(chosenOption);
+        const canvasService = new CanvasService();
+        const {id, ...canvas} = await canvasService.getCanvasByName(chosenOption);
         onCanvasChange(canvas)
 
     }

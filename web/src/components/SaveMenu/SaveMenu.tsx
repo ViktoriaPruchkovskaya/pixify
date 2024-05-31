@@ -2,6 +2,7 @@ import {FormEvent, useState} from "react";
 import {Canvas} from "../../services/imageService";
 import {StorageService} from "../../services/storageService";
 import MenuButton from "./MenuButton";
+import CanvasService from "../../services/canvasService";
 
 interface SaveMenuProps {
     canvas: Canvas;
@@ -18,9 +19,9 @@ export default function SaveMenu({canvas, setIsSaveMenuShowed}: SaveMenuProps) {
         event.preventDefault();
         const {canvasName} = event.target as HTMLFormElement;
         (async () => {
-            const storageService = await StorageService.getInstance();
+            const canvasService = new CanvasService();
             try {
-                await storageService.setCanvas(canvas, canvasName.value);
+                await canvasService.addCanvas(canvas, canvasName.value);
                 closeMenu()
             } catch (error: unknown) {
                 if (error instanceof Error) {
