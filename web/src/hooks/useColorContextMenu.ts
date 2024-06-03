@@ -3,34 +3,33 @@ import {CSSProperties, Dispatch, SetStateAction, useState} from "react";
 interface ColorContextMenu {
     canvasUpdater: (color: number[]) => void;
     setCanvasUpdater: Dispatch<SetStateAction<(color: number[]) => void>>;
-    selectorStyle: CSSProperties;
-    isMenuShowed: boolean;
-    hideMenu: () => void;
+    colorSelectorStyle: CSSProperties;
     showMenu: (xPos: number, yPos: number) => void;
 }
 
-export function useColorContextMenu(): ColorContextMenu {
+export function useColorContextMenu(showOverlay: (onOverlayHide: () => void) => void, resetCellPosition: () => void): ColorContextMenu {
     const [canvasUpdater, setCanvasUpdater] =
         useState<(color: number[]) => void>(() => () => {
         });
 
-    const [selectorStyle, setSelectorStyle] = useState<CSSProperties>({display: "none"});
-    const [isMenuShowed, setIsMenuShowed] = useState(false);
+    const [colorSelectorStyle, setColorSelectorStyle] = useState<CSSProperties>({display: "none"});
 
     const hideMenu = () => {
-        setSelectorStyle({display: "none"});
-        setIsMenuShowed(false);
+        setColorSelectorStyle({display: "none"});
     };
 
     const showMenu = (xPos: number, yPos: number) => {
-        setIsMenuShowed(true);
-        setSelectorStyle({
+        setColorSelectorStyle({
             display: "block",
             "top": yPos,
             "left": xPos,
-            zIndex: 1000
+            zIndex: 1
+        });
+        showOverlay(() => {
+            hideMenu();
+            resetCellPosition();
         });
     };
 
-    return {canvasUpdater, setCanvasUpdater, selectorStyle, isMenuShowed, showMenu, hideMenu};
+    return {canvasUpdater, setCanvasUpdater, colorSelectorStyle, showMenu};
 }

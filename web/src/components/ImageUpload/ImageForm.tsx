@@ -10,7 +10,7 @@ export default function ImageForm({onCanvasReceived}: UploadImageFormProps) {
         event.preventDefault();
         const {colorsNum, cellsNum, image} = event.target as HTMLFormElement;
         (async () => {
-            let canvas = await new ImageService().uploadImage({
+            const canvas = await new ImageService().uploadImage({
                 img: image.files.item(0),
                 colorsNum: colorsNum.value,
                 cellsNum: cellsNum.value
