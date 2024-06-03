@@ -1,8 +1,8 @@
 import {FormEvent, useState} from "react";
-import {Canvas} from "../../services/imageService";
-import {StorageService} from "../../services/storageService";
 import MenuButton from "./MenuButton";
-import CanvasService from "../../services/canvasService";
+import {Canvas} from "../../../services/imageService";
+import CanvasService from "../../../services/canvasService";
+
 
 interface SaveMenuProps {
     canvas: Canvas;
@@ -33,13 +33,17 @@ export default function SaveMenu({canvas, setIsSaveMenuShowed}: SaveMenuProps) {
 
     return (
         <div style={{
+            top: "10%",
+            left: "35%",
             display: "block",
             position: "fixed",
+            margin: "0 0 auto",
             width: "400px",
             height: "180px",
             padding: "20px",
             paddingTop: "40px",
             backgroundColor: "#f2f2f2",
+            zIndex: "1",
             borderRadius: "2px",
             boxShadow: "0 2px 9px rgba(0, 0, 0, 0.6)",
         }}>

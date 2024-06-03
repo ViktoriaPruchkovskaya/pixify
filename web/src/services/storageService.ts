@@ -100,6 +100,7 @@ export class StorageService {
             } else {
                 request = transaction.objectStore(storeName)[operation](key as IDBValidKey | IDBKeyRange);
             }
+
             request.onsuccess = () => {
                 resolve(request.result)
             };

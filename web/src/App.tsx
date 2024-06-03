@@ -6,7 +6,6 @@ import ColorSelector from "./components/ColorSelector/ColorSelector";
 import {useColorContextMenu} from "./hooks/useColorContextMenu";
 import {useSelectedCell} from "./hooks/useSelectedCell";
 import ThreadsPalette from "./components/ThreadsPalette/ThreadsPalette";
-import SaveButton from "./components/SaveMenu/SaveButton";
 import CanvasMenu from "./components/CanvasMenu/CanvasMenu";
 
 export default function App() {
@@ -41,8 +40,12 @@ export default function App() {
                 resetCellPosition();
             }}/>}
             <ColorSelector dynamicStyles={selectorStyle} palette={canvas.palette} updateCanvas={canvasUpdater}/>
-            <ImageForm onCanvasReceived={setCanvas}/>
-            <CanvasMenu onCanvasChange={setCanvas}/>
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <ImageForm onCanvasReceived={setCanvas}/>
+                <CanvasMenu onCanvasSelected={setCanvas} canvas={canvas} isSaveMenuShowed={isSaveMenuShowed}
+                            setIsSaveMenuShowed={setIsSaveMenuShowed}/>
+            </div>
+
             {canvas?.embroidery.length ? (
                 <div style={{
                     marginTop: "15px",
@@ -58,8 +61,6 @@ export default function App() {
                                       setSelectedCellPosition={setSelectedCellPosition}
                                       selectedCellPosition={selectedCellPosition}/>
                     <ThreadsPalette palette={canvas.palette}/>
-                    <SaveButton canvas={canvas} isSaveMenuShowed={isSaveMenuShowed}
-                                setIsSaveMenuShowed={setIsSaveMenuShowed}/>
                 </div>
             ) : undefined}
         </div>

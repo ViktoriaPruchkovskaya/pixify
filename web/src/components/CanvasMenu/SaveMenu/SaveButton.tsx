@@ -1,4 +1,4 @@
-import {Canvas} from "../../services/imageService";
+import {Canvas} from "../../../services/imageService";
 import SaveMenu from "./SaveMenu";
 
 interface SaveButtonProps {

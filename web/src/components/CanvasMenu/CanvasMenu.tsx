@@ -1,44 +1,17 @@
-import {useEffect, useState} from "react";
-import {StorageService} from "../../services/storageService";
+import CanvasSelector from "./CanvasSelector";
 import {Canvas} from "../../services/imageService";
-import CanvasService from "../../services/canvasService";
+import SaveButton from "./SaveMenu/SaveButton";
 
 interface CanvasMenuProps {
-    onCanvasChange: (canvas: Canvas) => void;
+    onCanvasSelected: (canvas: Canvas) => void;
+    canvas: Canvas;
+    setIsSaveMenuShowed: (isShowed: boolean) => void;
+    isSaveMenuShowed: boolean;
 }
 
-export default function CanvasMenu({onCanvasChange}: CanvasMenuProps) {
-    let [canvases, setCanvases] = useState<string[]>([]);
-
-    async function getSavedCanvases() {
-        const canvasService = new CanvasService();
-        const canvasNames = await canvasService.getCanvasNames()
-        setCanvases(canvasNames)
-    }
-
-    useEffect(() => {
-        (async function () {
-            await getSavedCanvases()
-        })()
-    }, [])
-
-    const handleOnClick = async () => {
-        await getSavedCanvases()
-    }
-
-    const handleOnChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const chosenOption: string = event.target.value;
-        if (!chosenOption) {
-            return
-        }
-        const canvasService = new CanvasService();
-        const {id, ...canvas} = await canvasService.getCanvasByName(chosenOption);
-        onCanvasChange(canvas)
-
-    }
-
-    return (<select onClick={handleOnClick} onChange={handleOnChange}>
-        <option value={""}>Please choose saved canvas</option>
-        {canvases.map((option, index) => (<option key={index} value={option}>{option}</option>))}
-    </select>);
+export default function CanvasMenu({onCanvasSelected, canvas, setIsSaveMenuShowed, isSaveMenuShowed}: CanvasMenuProps) {
+    return <div>
+        <CanvasSelector onCanvasSelected={onCanvasSelected}/>
+        <SaveButton canvas={canvas} setIsSaveMenuShowed={setIsSaveMenuShowed} isSaveMenuShowed={isSaveMenuShowed}/>
+    </div>;
 }
