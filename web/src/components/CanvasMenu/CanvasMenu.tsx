@@ -5,13 +5,19 @@ import SaveButton from "./SaveMenu/SaveButton";
 interface CanvasMenuProps {
     onCanvasSelected: (canvas: Canvas) => void;
     canvas: Canvas;
-    setIsSaveMenuShowed: (isShowed: boolean) => void;
-    isSaveMenuShowed: boolean;
+    showOverlay: (onClose: () => void) => void;
+    hideOverlay: () => void;
 }
 
-export default function CanvasMenu({onCanvasSelected, canvas, setIsSaveMenuShowed, isSaveMenuShowed}: CanvasMenuProps) {
+export default function CanvasMenu(
+    {
+        onCanvasSelected,
+        canvas,
+        hideOverlay,
+        showOverlay
+    }: CanvasMenuProps) {
     return <div>
         <CanvasSelector onCanvasSelected={onCanvasSelected}/>
-        <SaveButton canvas={canvas} setIsSaveMenuShowed={setIsSaveMenuShowed} isSaveMenuShowed={isSaveMenuShowed}/>
+        <SaveButton canvas={canvas} showOverlay={showOverlay} hideOverlay={hideOverlay}/>
     </div>;
 }

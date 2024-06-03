@@ -7,6 +7,7 @@ import {useColorContextMenu} from "./hooks/useColorContextMenu";
 import {useSelectedCell} from "./hooks/useSelectedCell";
 import ThreadsPalette from "./components/ThreadsPalette/ThreadsPalette";
 import CanvasMenu from "./components/CanvasMenu/CanvasMenu";
+import {useOverlay} from "./hooks/useOverlay";
 
 export default function App() {
     const [canvas, setCanvas] = useState<Canvas>({
@@ -14,6 +15,8 @@ export default function App() {
         palette: [{identifier: "00", color: {name: "", rgb: []}, n_stitches: 0}]
     });
 
+    const {showOverlay, hideOverlay, isOverlayRendered, onClose} = useOverlay();
+    const {setSelectedCellPosition, resetCellPosition, selectedCellPosition} = useSelectedCell();
     const {
         canvasUpdater,
         setCanvasUpdater,
@@ -21,14 +24,11 @@ export default function App() {
         showMenu,
         hideMenu,
         selectorStyle
-    } = useColorContextMenu();
-
-    const {setSelectedCellPosition, resetCellPosition, selectedCellPosition} = useSelectedCell();
-    const [isSaveMenuShowed, setIsSaveMenuShowed] = useState(false);
+    } = useColorContextMenu(showOverlay, resetCellPosition);
 
     return (
         <div>
-            {isMenuShowed && <div style={{
+            {isOverlayRendered && <div style={{
                 display: "block",
                 position: "fixed",
                 width: "100vw",
@@ -36,14 +36,15 @@ export default function App() {
                 top: 0,
                 left: 0,
             }} onClick={() => {
-                hideMenu();
-                resetCellPosition();
+                onClose && onClose();
+                hideOverlay();
             }}/>}
             <ColorSelector dynamicStyles={selectorStyle} palette={canvas.palette} updateCanvas={canvasUpdater}/>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <ImageForm onCanvasReceived={setCanvas}/>
-                <CanvasMenu onCanvasSelected={setCanvas} canvas={canvas} isSaveMenuShowed={isSaveMenuShowed}
-                            setIsSaveMenuShowed={setIsSaveMenuShowed}/>
+                <CanvasMenu onCanvasSelected={setCanvas} canvas={canvas}
+                            showOverlay={showOverlay}
+                            hideOverlay={hideOverlay}/>
             </div>
 
             {canvas?.embroidery.length ? (
@@ -54,7 +55,7 @@ export default function App() {
                     paddingLeft: "20px",
                     paddingRight: "20px"
                 }}>
-                    <EmbroideryCanvas style={isMenuShowed ? {pointerEvents: 'none'} : {}}
+                    <EmbroideryCanvas style={isOverlayRendered ? {pointerEvents: 'none'} : {}}
                                       canvas={canvas} onCanvasChange={setCanvas}
                                       changeCanvasUpdater={setCanvasUpdater}
                                       showMenu={showMenu}

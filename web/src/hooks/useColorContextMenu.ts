@@ -9,7 +9,7 @@ interface ColorContextMenu {
     showMenu: (xPos: number, yPos: number) => void;
 }
 
-export function useColorContextMenu(): ColorContextMenu {
+export function useColorContextMenu(showOverlay: (onOverlayHide: () => void) => void, resetCellPosition: () => void): ColorContextMenu {
     const [canvasUpdater, setCanvasUpdater] =
         useState<(color: number[]) => void>(() => () => {
         });
@@ -29,6 +29,10 @@ export function useColorContextMenu(): ColorContextMenu {
             "top": yPos,
             "left": xPos,
             zIndex: 1000
+        });
+        showOverlay(() => {
+            hideMenu();
+            resetCellPosition();
         });
     };
 

@@ -7,12 +7,14 @@ import CanvasService from "../../../services/canvasService";
 interface SaveMenuProps {
     canvas: Canvas;
     setIsSaveMenuShowed: (isShowed: boolean) => void;
+    hideOverlay: () => void;
 }
 
-export default function SaveMenu({canvas, setIsSaveMenuShowed}: SaveMenuProps) {
+export default function SaveMenu({canvas, setIsSaveMenuShowed, hideOverlay}: SaveMenuProps) {
     const [formError, setFormError] = useState<string>();
     const closeMenu = () => {
-        setIsSaveMenuShowed(false)
+        hideOverlay();
+        setIsSaveMenuShowed(false);
     }
 
     const handleForm = (event: FormEvent<HTMLFormElement>) => {
