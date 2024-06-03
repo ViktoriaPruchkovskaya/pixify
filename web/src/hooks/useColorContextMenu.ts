@@ -13,15 +13,12 @@ export function useColorContextMenu(showOverlay: (onOverlayHide: () => void) => 
         });
 
     const [selectorStyle, setSelectorStyle] = useState<CSSProperties>({display: "none"});
-    const [isMenuShowed, setIsMenuShowed] = useState(false);
 
     const hideMenu = () => {
         setSelectorStyle({display: "none"});
-        setIsMenuShowed(false);
     };
 
     const showMenu = (xPos: number, yPos: number) => {
-        setIsMenuShowed(true);
         setSelectorStyle({
             display: "block",
             "top": yPos,
