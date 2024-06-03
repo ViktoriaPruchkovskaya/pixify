@@ -21,7 +21,7 @@ export default function App() {
         canvasUpdater,
         setCanvasUpdater,
         showMenu,
-        selectorStyle
+        colorSelectorStyle
     } = useColorContextMenu(showOverlay, resetCellPosition);
 
     return (
@@ -37,7 +37,7 @@ export default function App() {
                 onClose && onClose();
                 hideOverlay();
             }}/>}
-            <ColorSelector dynamicStyles={selectorStyle} palette={canvas.palette} updateCanvas={canvasUpdater}/>
+            <ColorSelector dynamicStyles={colorSelectorStyle} palette={canvas.palette} updateCanvas={canvasUpdater}/>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <ImageForm onCanvasReceived={setCanvas}/>
                 <CanvasMenu onCanvasSelected={setCanvas} canvas={canvas}

@@ -3,7 +3,7 @@ import {CSSProperties, Dispatch, SetStateAction, useState} from "react";
 interface ColorContextMenu {
     canvasUpdater: (color: number[]) => void;
     setCanvasUpdater: Dispatch<SetStateAction<(color: number[]) => void>>;
-    selectorStyle: CSSProperties;
+    colorSelectorStyle: CSSProperties;
     showMenu: (xPos: number, yPos: number) => void;
 }
 
@@ -12,18 +12,18 @@ export function useColorContextMenu(showOverlay: (onOverlayHide: () => void) => 
         useState<(color: number[]) => void>(() => () => {
         });
 
-    const [selectorStyle, setSelectorStyle] = useState<CSSProperties>({display: "none"});
+    const [colorSelectorStyle, setColorSelectorStyle] = useState<CSSProperties>({display: "none"});
 
     const hideMenu = () => {
-        setSelectorStyle({display: "none"});
+        setColorSelectorStyle({display: "none"});
     };
 
     const showMenu = (xPos: number, yPos: number) => {
-        setSelectorStyle({
+        setColorSelectorStyle({
             display: "block",
             "top": yPos,
             "left": xPos,
-            zIndex: 1000
+            zIndex: 1
         });
         showOverlay(() => {
             hideMenu();
@@ -31,5 +31,5 @@ export function useColorContextMenu(showOverlay: (onOverlayHide: () => void) => 
         });
     };
 
-    return {canvasUpdater, setCanvasUpdater, selectorStyle, showMenu};
+    return {canvasUpdater, setCanvasUpdater, colorSelectorStyle, showMenu};
 }
