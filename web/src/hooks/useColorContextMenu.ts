@@ -4,8 +4,6 @@ interface ColorContextMenu {
     canvasUpdater: (color: number[]) => void;
     setCanvasUpdater: Dispatch<SetStateAction<(color: number[]) => void>>;
     selectorStyle: CSSProperties;
-    isMenuShowed: boolean;
-    hideMenu: () => void;
     showMenu: (xPos: number, yPos: number) => void;
 }
 
@@ -36,5 +34,5 @@ export function useColorContextMenu(showOverlay: (onOverlayHide: () => void) => 
         });
     };
 
-    return {canvasUpdater, setCanvasUpdater, selectorStyle, isMenuShowed, showMenu, hideMenu};
+    return {canvasUpdater, setCanvasUpdater, selectorStyle, showMenu};
 }

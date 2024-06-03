@@ -20,9 +20,7 @@ export default function App() {
     const {
         canvasUpdater,
         setCanvasUpdater,
-        isMenuShowed,
         showMenu,
-        hideMenu,
         selectorStyle
     } = useColorContextMenu(showOverlay, resetCellPosition);
 
