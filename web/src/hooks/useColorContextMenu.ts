@@ -1,4 +1,4 @@
-import {CSSProperties, Dispatch, SetStateAction, useState} from "react";
+import { CSSProperties, Dispatch, SetStateAction, useState } from 'react';
 
 interface ColorContextMenu {
     canvasUpdater: (color: number[]) => void;
@@ -7,23 +7,28 @@ interface ColorContextMenu {
     showMenu: (xPos: number, yPos: number) => void;
 }
 
-export function useColorContextMenu(showOverlay: (onOverlayHide: () => void) => void, resetCellPosition: () => void): ColorContextMenu {
-    const [canvasUpdater, setCanvasUpdater] =
-        useState<(color: number[]) => void>(() => () => {
-        });
+export function useColorContextMenu(
+    showOverlay: (onOverlayHide: () => void) => void,
+    resetCellPosition: () => void
+): ColorContextMenu {
+    const [canvasUpdater, setCanvasUpdater] = useState<
+        (color: number[]) => void
+    >(() => () => {});
 
-    const [colorSelectorStyle, setColorSelectorStyle] = useState<CSSProperties>({display: "none"});
+    const [colorSelectorStyle, setColorSelectorStyle] = useState<CSSProperties>(
+        { display: 'none' }
+    );
 
     const hideMenu = () => {
-        setColorSelectorStyle({display: "none"});
+        setColorSelectorStyle({ display: 'none' });
     };
 
     const showMenu = (xPos: number, yPos: number) => {
         setColorSelectorStyle({
-            display: "block",
-            "top": yPos,
-            "left": xPos,
-            zIndex: 1
+            display: 'block',
+            top: yPos,
+            left: xPos,
+            zIndex: 1,
         });
         showOverlay(() => {
             hideMenu();
@@ -31,5 +36,5 @@ export function useColorContextMenu(showOverlay: (onOverlayHide: () => void) => 
         });
     };
 
-    return {canvasUpdater, setCanvasUpdater, colorSelectorStyle, showMenu};
+    return { canvasUpdater, setCanvasUpdater, colorSelectorStyle, showMenu };
 }
