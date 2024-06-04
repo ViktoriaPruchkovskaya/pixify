@@ -6,7 +6,8 @@
   "scripts": {
     "start": "parcel -p 8081",
     "build": "parcel build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "cd .. && husky web/.husky"
   },
   "keywords": [],
   "author": "",
@@ -28,9 +29,17 @@
     "eslint-plugin-react": "^7.34.2",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-unused-imports": "^4.0.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.5",
     "parcel": "^2.12.0",
     "prettier": "^3.3.0",
     "process": "^0.11.10",
     "typescript": "^5.4.5"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ]
   }
 }
