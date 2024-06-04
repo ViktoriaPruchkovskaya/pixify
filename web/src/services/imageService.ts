@@ -5,29 +5,35 @@ export interface Canvas {
 
 export interface PaletteColor {
     identifier: string;
-    color: { rgb: number[], name: string };
+    color: { rgb: number[]; name: string };
     n_stitches: number;
 }
 
 export class ImageService {
-    public async uploadImage({img, colorsNum, cellsNum}: {
-        img: File,
-        colorsNum: string,
-        cellsNum: string
+    public async uploadImage({
+        img,
+        colorsNum,
+        cellsNum,
+    }: {
+        img: File;
+        colorsNum: string;
+        cellsNum: string;
     }): Promise<Canvas> {
         const formData = new FormData();
-        formData.append("file", img);
-        formData.append("n_colors", colorsNum);
-        formData.append("n_cells_in_width", cellsNum);
+        formData.append('file', img);
+        formData.append('n_colors', colorsNum);
+        formData.append('n_cells_in_width', cellsNum);
 
-        const res = await fetch("/api/upload", {
-            method: "POST",
-            body: formData
-        })
+        const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+        });
         if (!res.ok) {
-            const message = await res.text()
-            throw new Error(`Request failed. Status code: ${res.status}. Message: ${message}`)
+            const message = await res.text();
+            throw new Error(
+                `Request failed. Status code: ${res.status}. Message: ${message}`
+            );
         }
-        return res.json()
+        return res.json();
     }
 }

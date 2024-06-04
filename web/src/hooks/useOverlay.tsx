@@ -1,4 +1,4 @@
-import {useState} from "react";
+import { useState } from 'react';
 
 interface Overlay {
     showOverlay: (onClose: () => void) => void;
@@ -19,5 +19,5 @@ export function useOverlay(): Overlay {
         setOnClose(undefined);
     };
 
-    return {showOverlay, hideOverlay, isOverlayRendered, onClose};
+    return { showOverlay, hideOverlay, isOverlayRendered, onClose };
 }

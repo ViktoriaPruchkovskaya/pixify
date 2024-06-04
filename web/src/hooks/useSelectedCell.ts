@@ -1,8 +1,8 @@
-import {useState} from "react";
+import { useState } from 'react';
 
 interface CellPosition {
-    row: number,
-    column: number
+    row: number;
+    column: number;
 }
 
 interface SelectedCell {
@@ -17,14 +17,14 @@ export function useSelectedCell(): SelectedCell {
     const setSelectedCellPosition = (row: number) => {
         return (column: number) => {
             return () => {
-                setCellPosition({row, column})
-            }
-        }
-    }
+                setCellPosition({ row, column });
+            };
+        };
+    };
 
     const resetCellPosition = () => {
-        setCellPosition(undefined)
-    }
+        setCellPosition(undefined);
+    };
 
-    return {selectedCellPosition, setSelectedCellPosition, resetCellPosition}
+    return { selectedCellPosition, setSelectedCellPosition, resetCellPosition };
 }
