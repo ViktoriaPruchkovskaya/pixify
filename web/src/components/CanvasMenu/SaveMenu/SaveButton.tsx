@@ -23,7 +23,15 @@ export default function SaveButton({
 
     return (
         <>
-            <button onClick={handleOnClick}>SAVE</button>
+            <button
+                onClick={handleOnClick}
+                style={{
+                    cursor: 'pointer',
+                    width: '10%',
+                }}
+            >
+                Save
+            </button>
             {isSaveMenuShowed && (
                 <SaveMenu
                     canvas={canvas}

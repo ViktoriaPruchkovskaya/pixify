@@ -16,13 +16,21 @@ export default function CanvasMenu({
     showOverlay,
 }: CanvasMenuProps) {
     return (
-        <div>
+        <div
+            style={{
+                display: 'flex',
+                // justifyContent: 'space-between',
+                gap: '15px',
+            }}
+        >
             <CanvasSelector onCanvasSelected={onCanvasSelected} />
-            <SaveButton
-                canvas={canvas}
-                showOverlay={showOverlay}
-                hideOverlay={hideOverlay}
-            />
+            {canvas.embroidery.length ? (
+                <SaveButton
+                    canvas={canvas}
+                    showOverlay={showOverlay}
+                    hideOverlay={hideOverlay}
+                />
+            ) : undefined}
         </div>
     );
 }

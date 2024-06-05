@@ -47,7 +47,13 @@ export default function App() {
                 palette={canvas.palette}
                 updateCanvas={canvasUpdater}
             />
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                }}
+            >
                 <ImageForm onCanvasReceived={setCanvas} />
                 <CanvasMenu
                     onCanvasSelected={setCanvas}
