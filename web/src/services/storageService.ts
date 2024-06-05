@@ -1,3 +1,7 @@
+type Operation = 'add' | 'get' | 'getAllKeys' | 'clear';
+
+type Mode = 'readwrite' | 'readonly';
+
 export class StorageService {
     public readonly db: IDBDatabase;
     public static instance: StorageService;
@@ -62,6 +66,16 @@ export class StorageService {
         });
     }
 
+    public async clear(options: {
+        storeName: string;
+        transaction?: IDBTransaction;
+    }): Promise<void> {
+        return await this.wrapTransaction({
+            ...options,
+            operation: 'clear',
+        });
+    }
+
     private wrapTransaction<T>(args: {
         storeName: string;
         operation: 'add';
@@ -77,7 +91,7 @@ export class StorageService {
     }): Promise<T>;
     private wrapTransaction<T>(args: {
         storeName: string;
-        operation: 'getAllKeys';
+        operation: 'getAllKeys' | 'clear';
         transaction?: IDBTransaction;
     }): Promise<T>;
     private wrapTransaction<T>({
@@ -89,7 +103,7 @@ export class StorageService {
     }: {
         storeName: string;
         transaction?: IDBTransaction;
-        operation: 'add' | 'get' | 'getAllKeys';
+        operation: Operation;
         data?: object;
         key?: IDBValidKey | IDBKeyRange;
     }): Promise<T> {
@@ -98,19 +112,27 @@ export class StorageService {
         }
         return new Promise((resolve, reject) => {
             if (!transaction) {
-                const mode = operation === 'add' ? 'readwrite' : 'readonly';
+                const mode = this.getMode(operation);
                 transaction = this.db.transaction(storeName, mode);
             }
 
             let request;
-            if (operation === 'add') {
-                request = transaction
-                    .objectStore(storeName)
-                    .add(data, key as IDBValidKey);
-            } else {
-                request = transaction
-                    .objectStore(storeName)
-                    [operation](key as IDBValidKey | IDBKeyRange);
+            switch (operation) {
+                case 'add': {
+                    request = transaction
+                        .objectStore(storeName)
+                        .add(data, key as IDBValidKey);
+                    break;
+                }
+                case 'clear': {
+                    request = transaction.objectStore(storeName).clear();
+                    break;
+                }
+                default: {
+                    request = transaction
+                        .objectStore(storeName)
+                        [operation](key as IDBValidKey | IDBKeyRange);
+                }
             }
 
             request.onsuccess = () => {
@@ -121,5 +143,16 @@ export class StorageService {
                 reject(request.error);
             };
         });
+    }
+
+    private getMode(operation: Operation): Mode {
+        switch (operation) {
+            case 'add':
+            case 'clear':
+                return 'readwrite';
+            case 'getAllKeys':
+            case 'get':
+                return 'readonly';
+        }
     }
 }

@@ -42,4 +42,9 @@ export default class CanvasService {
             key: name,
         });
     }
+
+    public async deleteCanvases(): Promise<void> {
+        const storeService = await StorageService.getInstance();
+        return storeService.clear({ storeName: this.storeName });
+    }
 }

@@ -7,12 +7,16 @@ interface SaveMenuProps {
     canvas: Canvas;
     setIsSaveMenuShowed: (isShowed: boolean) => void;
     hideOverlay: () => void;
+    setCanvasNames: (canvasNames: string[]) => void;
+    canvasNames: string[];
 }
 
 export default function SaveMenu({
     canvas,
     setIsSaveMenuShowed,
     hideOverlay,
+    canvasNames,
+    setCanvasNames,
 }: SaveMenuProps) {
     const [formError, setFormError] = useState<string>();
     const closeMenu = () => {
@@ -27,6 +31,7 @@ export default function SaveMenu({
             const canvasService = new CanvasService();
             try {
                 await canvasService.addCanvas(canvas, canvasName.value);
+                setCanvasNames([...canvasNames, canvasName.value]);
                 closeMenu();
             } catch (error: unknown) {
                 if (error instanceof Error) {

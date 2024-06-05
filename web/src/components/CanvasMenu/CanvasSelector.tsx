@@ -1,31 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Canvas } from '../../services/imageService';
 import CanvasService from '../../services/canvasService';
 
 interface CanvasSelectorProps {
     onCanvasSelected: (canvas: Canvas) => void;
+    setCanvasNames: (canvasNames: string[]) => void;
+    canvasNames: string[];
 }
 
 export default function CanvasSelector({
     onCanvasSelected,
+    setCanvasNames,
+    canvasNames,
 }: CanvasSelectorProps) {
-    const [canvases, setCanvases] = useState<string[]>([]);
-
-    async function getSavedCanvases() {
-        const canvasService = new CanvasService();
-        const canvasNames = await canvasService.getCanvasNames();
-        setCanvases(canvasNames);
-    }
-
     useEffect(() => {
         (async function () {
-            await getSavedCanvases();
+            const canvasService = new CanvasService();
+            const canvasNames = await canvasService.getCanvasNames();
+            setCanvasNames(canvasNames);
         })();
     }, []);
-
-    const handleOnClick = async () => {
-        await getSavedCanvases();
-    };
 
     const handleOnChange = async (
         event: React.ChangeEvent<HTMLSelectElement>
@@ -41,9 +35,9 @@ export default function CanvasSelector({
     };
 
     return (
-        <select onClick={handleOnClick} onChange={handleOnChange}>
+        <select onChange={handleOnChange}>
             <option value={''}>Please choose saved canvas</option>
-            {canvases.map((option, index) => (
+            {canvasNames.map((option, index) => (
                 <option key={index} value={option}>
                     {option}
                 </option>
