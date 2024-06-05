@@ -30,6 +30,15 @@ export default class CanvasService {
         });
     }
 
+    public async putCanvas(canvas: Canvas, name: string): Promise<void> {
+        const storeService = await StorageService.getInstance();
+        await storeService.put({
+            storeName: this.storeName,
+            data: canvas,
+            key: name,
+        });
+    }
+
     public async getCanvasNames(): Promise<string[]> {
         const storeService = await StorageService.getInstance();
         return storeService.getAllKeys<string[]>({ storeName: this.storeName });
