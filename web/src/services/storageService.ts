@@ -1,4 +1,4 @@
-type Operation = 'add' | 'get' | 'getAllKeys' | 'clear';
+type Operation = 'add' | 'put' | 'get' | 'getAllKeys' | 'clear';
 
 type Mode = 'readwrite' | 'readonly';
 
@@ -48,6 +48,15 @@ export class StorageService {
         return await this.wrapTransaction({ ...options, operation: 'add' });
     }
 
+    public async put<T>(options: {
+        storeName: string;
+        data: object;
+        key: IDBValidKey;
+        transaction?: IDBTransaction;
+    }): Promise<T> {
+        return await this.wrapTransaction({ ...options, operation: 'put' });
+    }
+
     public async get<T>(options: {
         storeName: string;
         key: IDBValidKey | IDBKeyRange;
@@ -78,7 +87,7 @@ export class StorageService {
 
     private wrapTransaction<T>(args: {
         storeName: string;
-        operation: 'add';
+        operation: 'add' | 'put';
         data: object;
         key: IDBValidKey;
         transaction?: IDBTransaction;
@@ -118,10 +127,11 @@ export class StorageService {
 
             let request;
             switch (operation) {
-                case 'add': {
+                case 'add':
+                case 'put': {
                     request = transaction
                         .objectStore(storeName)
-                        .add(data, key as IDBValidKey);
+                        [operation](data, key as IDBValidKey);
                     break;
                 }
                 case 'clear': {
@@ -149,6 +159,7 @@ export class StorageService {
         switch (operation) {
             case 'add':
             case 'clear':
+            case 'put':
                 return 'readwrite';
             case 'getAllKeys':
             case 'get':

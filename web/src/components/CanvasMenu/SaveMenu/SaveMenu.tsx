@@ -18,7 +18,26 @@ export default function SaveMenu({
     canvasNames,
     setCanvasNames,
 }: SaveMenuProps) {
-    const [formError, setFormError] = useState<string>();
+    const [formError, setFormError] = useState<{
+        kind: 'conflict' | 'other';
+        message: string;
+    }>();
+
+    const saveCanvas = async (canvas: Canvas, name: string) => {
+        const canvasService = new CanvasService();
+        await canvasService.addCanvas(canvas, name);
+        setCanvasNames([...canvasNames, name]);
+    };
+
+    const overwriteCanvas = async (canvas: Canvas, name: string) => {
+        const canvasService = new CanvasService();
+        await canvasService.putCanvas(canvas, name);
+    };
+
+    const [onSave, setOnSave] = useState<
+        (canvas: Canvas, name: string) => Promise<void>
+    >(() => saveCanvas);
+
     const closeMenu = () => {
         hideOverlay();
         setIsSaveMenuShowed(false);
@@ -28,17 +47,31 @@ export default function SaveMenu({
         event.preventDefault();
         const { canvasName } = event.target as HTMLFormElement;
         (async () => {
-            const canvasService = new CanvasService();
             try {
-                await canvasService.addCanvas(canvas, canvasName.value);
-                setCanvasNames([...canvasNames, canvasName.value]);
+                await onSave(canvas, canvasName.value);
                 closeMenu();
             } catch (error: unknown) {
                 if (error instanceof Error) {
-                    setFormError(error.message);
+                    if (error.message.includes('already exists')) {
+                        setFormError({
+                            kind: 'conflict',
+                            message: error.message,
+                        });
+                        setOnSave(() => overwriteCanvas);
+                    } else {
+                        setFormError({
+                            kind: 'other',
+                            message: error.message,
+                        });
+                    }
                 }
             }
         })();
+    };
+
+    const resetState = () => {
+        setFormError(undefined);
+        setOnSave(() => saveCanvas);
     };
 
     return (
@@ -66,7 +99,7 @@ export default function SaveMenu({
                     id='canvasName'
                     name='canvasName'
                     defaultValue='canvas'
-                    onInput={() => formError && setFormError(undefined)}
+                    onInput={() => formError && resetState()}
                     style={{
                         width: '100%',
                         padding: '12px 20px',
@@ -77,7 +110,7 @@ export default function SaveMenu({
                     }}
                 />
                 <div style={{ width: '100%', height: '20px' }}>
-                    <span style={{ color: 'red' }}>{formError}</span>
+                    <span style={{ color: 'red' }}>{formError?.message}</span>
                 </div>
                 <div
                     style={{ display: 'flex', justifyContent: 'space-between' }}
@@ -90,7 +123,7 @@ export default function SaveMenu({
                         Cancel
                     </MenuButton>
                     <MenuButton type={'submit'} backgroundColor={'#4Caf50'}>
-                        Save
+                        {formError?.kind === 'conflict' ? 'Overwrite' : 'Save'}
                     </MenuButton>
                 </div>
             </form>
