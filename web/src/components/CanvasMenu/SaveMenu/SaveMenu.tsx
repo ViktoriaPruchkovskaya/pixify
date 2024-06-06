@@ -1,4 +1,5 @@
 import { FormEvent, useState } from 'react';
+import './SaveMenu.css';
 import MenuButton from './MenuButton';
 import { Canvas } from '../../../services/imageService';
 import CanvasService from '../../../services/canvasService';
@@ -75,46 +76,21 @@ export default function SaveMenu({
     };
 
     return (
-        <div
-            style={{
-                top: '10%',
-                left: '35%',
-                display: 'block',
-                position: 'fixed',
-                margin: '0 0 auto',
-                width: '400px',
-                height: '180px',
-                padding: '20px',
-                paddingTop: '40px',
-                backgroundColor: '#f2f2f2',
-                zIndex: '1',
-                borderRadius: '2px',
-                boxShadow: '0 2px 9px rgba(0, 0, 0, 0.6)',
-            }}
-        >
+        <div className='save-menu-window'>
             <form onSubmit={handleForm}>
                 <label htmlFor='image'>Canvas Name</label>
                 <input
+                    className='canvas-name-input'
                     type='text'
                     id='canvasName'
                     name='canvasName'
                     defaultValue='canvas'
                     onInput={() => formError && resetState()}
-                    style={{
-                        width: '100%',
-                        padding: '12px 20px',
-                        margin: '8px 0',
-                        border: '1px solid #ccc',
-                        borderRadius: '4px',
-                        boxSizing: 'border-box',
-                    }}
                 />
-                <div style={{ width: '100%', height: '20px' }}>
+                <div className='error-message-container'>
                     <span style={{ color: 'red' }}>{formError?.message}</span>
                 </div>
-                <div
-                    style={{ display: 'flex', justifyContent: 'space-between' }}
-                >
+                <div className='menu-buttons-container'>
                     <MenuButton
                         type={'button'}
                         backgroundColor={'#a4a4a4'}

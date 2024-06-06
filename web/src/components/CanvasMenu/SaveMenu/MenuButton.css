@@ -1,0 +1,11 @@
+.menu-button {
+    width: 48%;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    color: white;
+}
+
+.menu-button:hover {
+    filter: brightness(85%);
+}

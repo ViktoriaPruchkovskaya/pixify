@@ -1,0 +1,13 @@
+.embroidery-cell {
+    width: 25px;
+    height: 25px;
+    border: solid black;
+    text-align: center;
+    min-width: 25px;
+    min-height: 25px;
+    cursor: pointer;
+}
+
+.embroidery-cell:hover {
+    transform: scale(1.5, 1.4)
+}

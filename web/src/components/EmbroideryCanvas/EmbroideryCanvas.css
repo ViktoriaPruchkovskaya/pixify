@@ -1,0 +1,23 @@
+.embroidery-canvas-container {
+    overflow: auto;
+    width: 950px;
+    height: 700px;
+    box-shadow: 0 2px 9px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.canvas-content {
+    margin: 5px;
+    border-collapse: collapse;
+    position: relative;
+}
+
+@media print {
+    .embroidery-canvas-container {
+        width: auto;
+        height: auto;
+        overflow: visible;
+        position: static;
+    }
+}
+

@@ -1,0 +1,24 @@
+.color-selector-container {
+    position: absolute;
+    background-color: #f9f9f9;
+    width: 100px;
+    height: 100px;
+    padding: 5px;
+    border-radius: 1px;
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+    overflow: auto;
+}
+
+.color-container {
+    margin: 4px;
+    display: flex;
+    align-items: center;
+    cursor: pointer
+}
+
+.color-box {
+    width: 15px;
+    height: 15px;
+    margin-right: 4px;
+    border: dotted grey;
+}

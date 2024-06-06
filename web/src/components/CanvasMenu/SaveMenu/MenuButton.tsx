@@ -1,3 +1,5 @@
+import './MenuButton.css';
+
 interface FormButtonInterface {
     type: 'submit' | 'button';
     backgroundColor: string;
@@ -13,16 +15,9 @@ export default function MenuButton({
 }: FormButtonInterface) {
     return (
         <button
+            className='menu-button'
+            style={{ backgroundColor }}
             type={type}
-            style={{
-                width: '48%',
-                padding: '10px',
-                border: 'none',
-                borderRadius: '4px',
-                backgroundColor,
-                color: 'white',
-                cursor: 'pointer',
-            }}
             onClick={onClick}
         >
             {children}
