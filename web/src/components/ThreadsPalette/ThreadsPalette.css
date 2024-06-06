@@ -1,0 +1,35 @@
+.palette-container {
+    display: grid;
+    height: 700px;
+    width: 350px;
+    overflow: auto;
+    gap: 10px;
+    box-shadow: 0 2px 9px rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.thread-container {
+    display: grid;
+    gap: 5%;
+    grid-template-columns: 120px auto 50px;
+    place-items: center;
+}
+
+.thread-color-sample {
+    width: 90px;
+    height: 30px;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1)
+}
+
+ul {
+    padding: 0
+}
+
+@media print {
+    .palette-container {
+        overflow: visible;
+        height: auto;
+        column-count: 3
+    }
+}

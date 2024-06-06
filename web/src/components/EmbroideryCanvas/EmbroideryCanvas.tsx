@@ -1,4 +1,5 @@
 import { CSSProperties } from 'react';
+import './EmbroideryCanvas.css';
 import EmbroideryRow from './EmbroideryRow';
 import { Canvas, PaletteColor } from '../../services/imageService';
 
@@ -63,23 +64,8 @@ export default function EmbroideryCanvas({
     };
 
     return (
-        <div
-            style={{
-                overflow: 'auto',
-                width: '950px',
-                height: '700px',
-                boxShadow: '0 2px 9px rgba(0, 0, 0, 0.3)',
-                position: 'relative',
-                ...style,
-            }}
-        >
-            <table
-                style={{
-                    margin: '5px',
-                    borderCollapse: 'collapse',
-                    position: 'relative',
-                }}
-            >
+        <div className='embroidery-canvas-container' style={style}>
+            <table className='canvas-content'>
                 <tbody>
                     {canvas.embroidery.map((row, i) => (
                         <EmbroideryRow

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import './EmbroideryCell.css';
 
 interface EmbroideryCell {
     color: number[];
@@ -19,15 +19,6 @@ export default function EmbroideryCell({
     setSelectedCellPosition,
     isSelected,
 }: EmbroideryCell) {
-    const [isFocused, setIsFocused] = useState(false);
-    const handleOnFocus = () => {
-        setIsFocused(true);
-    };
-
-    const handleOnLeave = () => {
-        setIsFocused(false);
-    };
-
     const handleOnClick = (event: React.MouseEvent<HTMLTableCellElement>) => {
         const targetPosition = event.currentTarget.getBoundingClientRect();
         showMenu(targetPosition.x + 35, targetPosition.y + 5);
@@ -37,20 +28,11 @@ export default function EmbroideryCell({
 
     return (
         <td
+            className='embroidery-cell'
             style={{
                 backgroundColor: `rgba(${color.toString()},0.5)`,
-                width: '25px',
-                height: '25px',
-                border: 'solid black',
-                textAlign: 'center',
-                minWidth: '25px',
-                minHeight: '25px',
-                transform:
-                    isFocused || isSelected ? 'scale(1.5,1.4)' : undefined,
-                cursor: 'pointer',
+                transform: isSelected ? 'scale(1.5,1.4)' : undefined,
             }}
-            onMouseOver={handleOnFocus}
-            onMouseLeave={handleOnLeave}
             onClick={handleOnClick}
         >
             {identifier}

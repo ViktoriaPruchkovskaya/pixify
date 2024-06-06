@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import './App.css';
 import ImageForm from './components/ImageUpload/ImageForm';
 import EmbroideryCanvas from './components/EmbroideryCanvas/EmbroideryCanvas';
 import { Canvas } from './services/imageService';
@@ -28,14 +29,7 @@ export default function App() {
         <div>
             {isOverlayRendered && (
                 <div
-                    style={{
-                        display: 'block',
-                        position: 'fixed',
-                        width: '100vw',
-                        height: '100vh',
-                        top: 0,
-                        left: 0,
-                    }}
+                    className='overlay'
                     onClick={() => {
                         onClose && onClose();
                         hideOverlay();
@@ -47,13 +41,7 @@ export default function App() {
                 palette={canvas.palette}
                 updateCanvas={canvasUpdater}
             />
-            <div
-                style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '10px',
-                }}
-            >
+            <div className='header-container'>
                 <ImageForm onCanvasReceived={setCanvas} />
                 <CanvasMenu
                     onCanvasSelected={setCanvas}
@@ -64,15 +52,7 @@ export default function App() {
             </div>
 
             {canvas?.embroidery.length ? (
-                <div
-                    style={{
-                        marginTop: '15px',
-                        display: 'flex',
-                        justifyContent: 'space-around',
-                        paddingLeft: '20px',
-                        paddingRight: '20px',
-                    }}
-                >
+                <div className='canvas-container'>
                     <EmbroideryCanvas
                         style={
                             isOverlayRendered ? { pointerEvents: 'none' } : {}
@@ -84,6 +64,7 @@ export default function App() {
                         setSelectedCellPosition={setSelectedCellPosition}
                         selectedCellPosition={selectedCellPosition}
                     />
+                    <div className='page-break'></div>
                     <ThreadsPalette palette={canvas.palette} />
                 </div>
             ) : undefined}

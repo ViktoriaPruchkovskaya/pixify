@@ -19,7 +19,6 @@ export default function ClearHistoryButton({
         <button
             onClick={handleOnClick}
             style={{
-                cursor: 'pointer',
                 width: '10%',
             }}
         >

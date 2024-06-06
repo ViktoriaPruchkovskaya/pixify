@@ -1,5 +1,6 @@
-import { PaletteColor } from '../../services/imageService';
 import { CSSProperties } from 'react';
+import './ColorSelector.css';
+import { PaletteColor } from '../../services/imageService';
 
 interface ColorSelectorProps {
     updateCanvas: (color: number[]) => void;
@@ -16,21 +17,13 @@ export default function ColorSelector({
         return palette.map((color, i) => (
             <div
                 key={i}
-                style={{
-                    margin: '4px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                }}
+                className='color-container'
                 onClick={() => updateCanvas(color.color.rgb)}
             >
                 <div
+                    className='color-box'
                     style={{
                         backgroundColor: `rgba(${color.color.rgb.toString()}, 0.5)`,
-                        width: '15px',
-                        height: '15px',
-                        marginRight: '4px',
-                        border: 'dotted grey',
                     }}
                 >
                     <span style={{ fontSize: 10, textAlign: 'center' }}>
@@ -45,17 +38,8 @@ export default function ColorSelector({
     return (
         <div
             role={'dialog'}
-            style={{
-                position: 'absolute',
-                backgroundColor: '#f9f9f9',
-                width: '100px',
-                height: '100px',
-                padding: '5px',
-                borderRadius: '1px',
-                boxShadow: '0px 8px 16px 0px rgba(0,0,0,0.2)',
-                overflow: 'auto',
-                ...dynamicStyles,
-            }}
+            className='color-selector-container'
+            style={dynamicStyles}
         >
             {displaySelector()}
         </div>

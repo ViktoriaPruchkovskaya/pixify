@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import './CanvasMenu.css';
 import CanvasSelector from './CanvasSelector';
 import { Canvas } from '../../services/imageService';
 import SaveButton from './SaveMenu/SaveButton';
 import ClearHistoryButton from './ClearHistoryButton';
+import PrintCanvasButton from './PrintCanvasButton';
 
 interface CanvasMenuProps {
     onCanvasSelected: (canvas: Canvas) => void;
@@ -20,12 +22,7 @@ export default function CanvasMenu({
     const [canvasNames, setCanvasNames] = useState<string[]>([]);
 
     return (
-        <div
-            style={{
-                display: 'flex',
-                gap: '15px',
-            }}
-        >
+        <div className='canvas-menu-container'>
             <CanvasSelector
                 onCanvasSelected={onCanvasSelected}
                 canvasNames={canvasNames}
@@ -35,13 +32,16 @@ export default function CanvasMenu({
                 <ClearHistoryButton setCanvasNames={setCanvasNames} />
             ) : undefined}
             {canvas.embroidery.length ? (
-                <SaveButton
-                    canvas={canvas}
-                    showOverlay={showOverlay}
-                    hideOverlay={hideOverlay}
-                    canvasNames={canvasNames}
-                    setCanvasNames={setCanvasNames}
-                />
+                <>
+                    <SaveButton
+                        canvas={canvas}
+                        showOverlay={showOverlay}
+                        hideOverlay={hideOverlay}
+                        canvasNames={canvasNames}
+                        setCanvasNames={setCanvasNames}
+                    />
+                    <PrintCanvasButton />
+                </>
             ) : undefined}
         </div>
     );
