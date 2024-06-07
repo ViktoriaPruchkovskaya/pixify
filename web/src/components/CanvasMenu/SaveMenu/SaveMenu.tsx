@@ -98,9 +98,15 @@ export default function SaveMenu({
                     >
                         Cancel
                     </MenuButton>
-                    <MenuButton type={'submit'} backgroundColor={'#4Caf50'}>
-                        {formError?.kind === 'conflict' ? 'Overwrite' : 'Save'}
-                    </MenuButton>
+                    {formError?.kind === 'conflict' ? (
+                        <MenuButton type={'submit'} backgroundColor={'#f33d3d'}>
+                            Overwrite
+                        </MenuButton>
+                    ) : (
+                        <MenuButton type={'submit'} backgroundColor={'#4Caf50'}>
+                            Save
+                        </MenuButton>
+                    )}
                 </div>
             </form>
         </div>
