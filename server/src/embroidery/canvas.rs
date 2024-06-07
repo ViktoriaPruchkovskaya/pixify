@@ -10,7 +10,7 @@ use crate::embroidery::colors::{DmcColor, RgbColor};
 use crate::embroidery::image::ImagePalette;
 use crate::error::CanvasError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CanvasConfig {
     pub img: DynamicImage,
     pub n_cells_in_width: u8,

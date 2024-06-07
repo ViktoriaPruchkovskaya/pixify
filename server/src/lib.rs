@@ -1,4 +1,4 @@
 pub mod api;
-mod embroidery;
+pub mod embroidery;
 mod error;
 pub mod http;
