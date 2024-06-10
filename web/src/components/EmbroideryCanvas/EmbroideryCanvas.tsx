@@ -46,13 +46,13 @@ export default function EmbroideryCanvas({
                 canvas.palette = newPalette.reduce(
                     (threads: PaletteColor[], thread: PaletteColor) => {
                         if (isEqual(thread.color.rgb, rgb)) {
-                            thread.n_stitches += 1;
+                            thread.nStitches += 1;
                         }
                         if (isEqual(thread.color.rgb, oldColor)) {
-                            thread.n_stitches -= 1;
+                            thread.nStitches -= 1;
                         }
 
-                        return thread.n_stitches > 0
+                        return thread.nStitches > 0
                             ? [...threads, thread]
                             : threads;
                     },

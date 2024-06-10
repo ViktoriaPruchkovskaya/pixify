@@ -5,6 +5,7 @@ struct CanvasResponse {
 }
 
 #[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 #[allow(unused)]
 struct Palette {
     pub identifier: String,
@@ -33,8 +34,8 @@ mod tests {
 
         let mut multipart = MultipartBuilder::new();
         multipart.add_file("file", "pic.png", &pic);
-        multipart.add_text("n_colors", 5);
-        multipart.add_text("n_cells_in_width", 10);
+        multipart.add_text("nColors", 5);
+        multipart.add_text("nCellsInWidth", 10);
         let (header, payload) = multipart.build();
         let req = test::TestRequest::post()
             .uri("/api/upload")
@@ -79,7 +80,7 @@ mod tests {
 
         let mut multipart = MultipartBuilder::new();
         multipart.add_file("file", "pic.png", &pic);
-        multipart.add_text("n_colors", 300);
+        multipart.add_text("nColors", 300);
         let (header, payload) = multipart.build();
         let req = test::TestRequest::post()
             .uri("/api/upload")
@@ -92,9 +93,7 @@ mod tests {
         let body = test::read_body(resp).await;
         assert_eq!(
             body,
-            Bytes::from_static(
-                b"\"Invalid value in 'n_colors'. Value should be within 2 and 200\""
-            )
+            Bytes::from_static(b"\"Invalid value in 'nColors'. Value should be within 2 and 200\"")
         );
     }
 
@@ -105,8 +104,8 @@ mod tests {
 
         let mut multipart = MultipartBuilder::new();
         multipart.add_file("file", "pic.png", &pic);
-        multipart.add_text("n_colors", 5);
-        multipart.add_text("n_cells_in_width", 10);
+        multipart.add_text("nColors", 5);
+        multipart.add_text("nCellsInWidth", 10);
         let (header, payload) = multipart.build();
         let req = test::TestRequest::post()
             .uri("/api/export")

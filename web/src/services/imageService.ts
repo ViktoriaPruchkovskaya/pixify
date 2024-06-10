@@ -6,7 +6,7 @@ export interface Canvas {
 export interface PaletteColor {
     identifier: string;
     color: { rgb: number[]; name: string };
-    n_stitches: number;
+    nStitches: number;
 }
 
 export class ImageService {
@@ -21,8 +21,8 @@ export class ImageService {
     }): Promise<Canvas> {
         const formData = new FormData();
         formData.append('file', img);
-        formData.append('n_colors', colorsNum);
-        formData.append('n_cells_in_width', cellsNum);
+        formData.append('nColors', colorsNum);
+        formData.append('nCellsInWidth', cellsNum);
 
         const res = await fetch('/api/upload', {
             method: 'POST',
