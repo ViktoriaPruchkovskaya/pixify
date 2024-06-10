@@ -29,7 +29,7 @@ export default function ThreadsPalette({ palette }: ThreadPaletteProps) {
                                 backgroundColor: `rgba(${thread.color.rgb.toString()},1)`,
                             }}
                         />
-                        <p>{calculateThreadLength(thread.n_stitches)}cm</p>
+                        <p>{calculateThreadLength(thread.nStitches)}cm</p>
                     </li>
                 ))}
             </ul>

@@ -21,7 +21,9 @@ struct FileData {
     pub buffer: Vec<u8>,
     pub filename: String,
 }
+
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct UploadResponse {
     pub embroidery: Vec<Vec<RgbColor>>,
     pub palette: Vec<Palette>,
@@ -82,25 +84,25 @@ async fn get_data_from_payload(payload: &mut Multipart) -> Result<ImageData, Inv
                         .to_string();
                     data.file.buffer = get_bytes(field).await?;
                 }
-                "n_cells_in_width" => {
+                "nCellsInWidth" => {
                     let content = get_bytes(field).await?;
                     data.n_cells_in_width =
                         Some(String::from_utf8(content)?.parse().map_err(|_| {
-                            InvalidPayloadError::MissingValue("n_cells_in_width".into())
+                            InvalidPayloadError::MissingValue("nCellsInWidth".into())
                         })?);
                 }
-                "n_colors" => {
+                "nColors" => {
                     let content = get_bytes(field).await?;
                     let value = String::from_utf8(content)?.parse().map_err(|_| {
                         InvalidPayloadError::InvalidValue(
-                            "n_colors".into(),
+                            "nColors".into(),
                             "Value should be within 2 and 200".into(),
                         )
                     })?;
 
                     if value <= 2 || value > 200 {
                         return Err(InvalidPayloadError::InvalidValue(
-                            "n_colors".into(),
+                            "nColors".into(),
                             "Value should be within 2 and 200".into(),
                         ));
                     }

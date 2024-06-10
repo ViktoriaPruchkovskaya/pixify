@@ -14,7 +14,7 @@ export default function App() {
     const [canvas, setCanvas] = useState<Canvas>({
         embroidery: [],
         palette: [
-            { identifier: '00', color: { name: '', rgb: [] }, n_stitches: 0 },
+            { identifier: '00', color: { name: '', rgb: [] }, nStitches: 0 },
         ],
     });
 
