@@ -1,3 +1,3 @@
 pub mod canvas;
-mod colors;
+pub mod colors;
 mod image;
