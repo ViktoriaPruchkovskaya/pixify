@@ -211,9 +211,10 @@ mod test {
 
         let config = CanvasConfig::new(bytes, Some(n_cells_in_width), Some(n_colors)).unwrap();
         let canvas = Canvas::new(config).unwrap();
+        let canvas_palette = canvas.get_dmc_palette();
 
         assert_eq!(canvas.embroidery[0].len(), n_cells_in_width as usize);
-        assert_eq!(canvas.palette.len(), n_colors as usize);
+        assert_eq!(canvas_palette.len(), n_colors as usize);
     }
 
     #[test]

@@ -66,6 +66,8 @@ fn convert_rgb_to_dmc(colors: &Vec<RgbColor>) -> Vec<DmcColor> {
 mod test {
     use super::*;
     use image::{ImageBuffer, Rgb};
+    use lab::Lab;
+    use std::cmp::Ordering;
 
     fn generate_image() -> DynamicImage {
         let image_buffer = ImageBuffer::from_fn(10, 10, |x, y| {
