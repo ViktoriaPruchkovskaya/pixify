@@ -1,9 +1,11 @@
 use actix_multipart::Multipart;
 use actix_web::{post, HttpResponse};
 use futures_util::StreamExt;
+use serde::Serialize;
 use std::collections::HashSet;
 
-use crate::embroidery::canvas::{Canvas, CanvasConfig};
+use crate::embroidery::canvas::{Canvas, CanvasConfig, Palette};
+use crate::embroidery::colors::RgbColor;
 use crate::error::{ExportError, InvalidPayloadError, UploadError};
 use crate::http::multipart::get_bytes;
 
@@ -19,6 +21,11 @@ struct FileData {
     pub buffer: Vec<u8>,
     pub filename: String,
 }
+#[derive(Serialize)]
+struct UploadResponse {
+    pub embroidery: Vec<Vec<RgbColor>>,
+    pub palette: Vec<Palette>,
+}
 
 #[post("/upload")]
 pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError> {
@@ -26,8 +33,12 @@ pub async fn upload(mut payload: Multipart) -> Result<HttpResponse, UploadError>
 
     let config = CanvasConfig::new(data.file.buffer, data.n_cells_in_width, data.n_colors)?;
     let canvas = Canvas::new(config)?;
+    let canvas_palette = canvas.get_dmc_palette();
 
-    Ok(HttpResponse::Ok().json(canvas))
+    Ok(HttpResponse::Ok().json(UploadResponse {
+        embroidery: canvas.embroidery,
+        palette: canvas_palette,
+    }))
 }
 
 #[post("/export")]
