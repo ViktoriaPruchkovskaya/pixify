@@ -1,0 +1,13 @@
+services:
+  web:
+    build: .
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+
+  app:
+    build: ./server/
+    ports:
+      - "8080:8080"
+
