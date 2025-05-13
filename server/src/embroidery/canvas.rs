@@ -1,7 +1,5 @@
 use image::imageops::FilterType;
-use image::{
-    io::Reader as ImageReader, ColorType, DynamicImage, GenericImage, GenericImageView, Pixel, Rgb,
-};
+use image::{ColorType, DynamicImage, GenericImage, GenericImageView, ImageReader, Pixel, Rgb};
 use lab::Lab;
 use serde::Serialize;
 use std::cmp::Ordering;
@@ -126,7 +124,7 @@ impl Canvas {
             }
         }
         let mut bytes: Vec<u8> = Vec::new();
-        image.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
+        image.write_to(&mut Cursor::new(&mut bytes), image::ImageFormat::Png)?;
         Ok(bytes)
     }
 

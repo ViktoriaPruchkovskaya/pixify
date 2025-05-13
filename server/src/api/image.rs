@@ -65,7 +65,7 @@ async fn get_data_from_payload(payload: &mut Multipart) -> Result<ImageData, Inv
 
     while let Some(item) = payload.next().await {
         let field = item?;
-        let content_disposition = field.content_disposition();
+        let content_disposition = field.content_disposition().unwrap();
 
         if let Some(name) = content_disposition.get_name() {
             if fields.contains(name) {
