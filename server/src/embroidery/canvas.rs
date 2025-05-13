@@ -186,7 +186,7 @@ mod test {
 
         let mut bytes = Vec::new();
         dynamic_image
-            .write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)
+            .write_to(&mut Cursor::new(&mut bytes), image::ImageFormat::Png)
             .unwrap();
 
         bytes
