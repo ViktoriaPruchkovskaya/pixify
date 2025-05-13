@@ -35,7 +35,7 @@ export default function EmbroideryRow({
                     changeCanvasUpdater={changeCanvasUpdater}
                     showMenu={showMenu}
                     setSelectedCellPosition={setSelectedCellPosition(i)}
-                    isSelected={selectedCellPosition?.column === i ?? false}
+                    isSelected={selectedCellPosition?.column === i || false}
                 />
             ))}
         </tr>
